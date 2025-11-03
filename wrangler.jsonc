@@ -4,6 +4,11 @@
     "compatibility_date": "2025-11-01",
     "assets": {
         "binding": "ASSETS",
-        "directory": ".svelte-kit/cloudflare",
+        "directory": ".svelte-kit/cloudflare"
+    },
+    "observability": {
+        "logs": {
+            "enabled": true
+        }
     }
 }
