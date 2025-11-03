@@ -1,5 +1,5 @@
-import type { ClubConfig } from './types';
 import { delabole } from './delabole';
+import type { ClubConfig } from './types';
 
 // Registry of all clubs
 const clubs: ClubConfig[] = [delabole];
@@ -18,15 +18,8 @@ export function getClubByHostname(hostname: string): ClubConfig | undefined {
 	// Extract subdomain for localhost development
 	// e.g., 'localhost:5173' -> use first club as default
 	// e.g., 'delabole.localhost:5173' -> extract 'delabole'
-	if (hostname.includes('localhost')) {
-		const parts = hostname.split('.');
-		if (parts.length > 1 && parts[0] !== 'localhost') {
-			const subdomain = parts[0];
-			const club = clubs.find((c) => c.id === subdomain);
-			if (club) return club;
-		}
-		// Default to first club for development
-		return clubs[0];
+	if (hostname === 'walkingmens.club' || hostname === 'localhost') {
+		return clubsByHostname.get('delabole.walkingmens.club');
 	}
 
 	// Production: match by full hostname
@@ -40,5 +33,6 @@ export function getAllClubs(): ClubConfig[] {
 	return [...clubs];
 }
 
+export type { ClubConfig, MeetingPoint, MeetingSchedule, RoutePoint, WalkingRoute } from './types';
 export { delabole };
-export type { ClubConfig, MeetingPoint, MeetingSchedule, WalkingRoute, RoutePoint } from './types';
+
