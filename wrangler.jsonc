@@ -8,6 +8,10 @@
     },
     "routes": [
         {
+            "pattern": "walkingmens.club/*",
+            "zone_name": "walkingmens.club"
+        },
+        {
             "pattern": "*.walkingmens.club/*",
             "zone_name": "walkingmens.club"
         }
