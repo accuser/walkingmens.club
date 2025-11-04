@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **multi-tenant Walking Mens Club application** built with SvelteKit 2 and Svelte 5, configured for deployment to Cloudflare via `@sveltejs/adapter-cloudflare`.
+This is a **multi-tenant Walking Men's Club application** built with SvelteKit 2 and Svelte 5, configured for deployment to Cloudflare via `@sveltejs/adapter-cloudflare`.
 
 **Purpose**: Provide local men's walking groups with simple informational websites showing:
 - Meeting time and location
@@ -129,22 +129,32 @@ Built for **Cloudflare Pages/Workers** using `@sveltejs/adapter-cloudflare`. The
 
 ## Multi-Tenant Architecture
 
-The app uses **hostname-based routing** to serve different content for each Walking Mens Club:
+The app uses **hostname-based routing** to serve different content for each Walking Men's Club:
 
-1. **Hostname detection**: Use `event.url.hostname` in SvelteKit hooks or `+page.server.ts` to determine which club
+1. **Hostname detection**: Use `event.url.hostname` in `+page.server.ts` to determine which content to show
 2. **Club configuration**: Each club has a configuration object defining:
    - Club name and location
    - Meeting time and day
    - Meeting point details (address, what3words, coordinates)
    - Walking route information
-   - Map data (GeoJSON or similar)
+   - Map data (route points with lat/lng coordinates)
 
 3. **Data structure**: Club configurations are stored in `src/lib/clubs/` (e.g., `delabole.ts`, `index.ts`)
 
-**Example flow**:
-- User visits `delabole.walkingmens.club`
-- SvelteKit detects hostname → loads Delabole club config
-- Root route renders club-specific information (meeting details, route map)
+**Routing behavior**:
+- **Main domain** (`walkingmens.club` or `localhost`): Shows landing page with all clubs
+  - Displays club suggestions with geolocation-based sorting
+  - Users can enable location to see clubs sorted by distance (in miles)
+  - Each club card links to its subdomain
+- **Subdomains** (e.g., `delabole.walkingmens.club`): Shows specific club page
+  - Full club details including meeting information and route map
+  - Returns 404 for unknown subdomains
+
+**Landing Page Features**:
+- Introduction to Walking Men's Clubs purpose
+- Optional geolocation to sort clubs by distance from user
+- Distance displayed in miles (or feet for very close clubs)
+- Grid of club cards showing key information
 
 **First club**: Delabole
 - Meeting: Sunday mornings at 10:00
