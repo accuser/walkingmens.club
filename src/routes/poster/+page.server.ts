@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getClubByHostname } from '$lib/clubs';
 import type { PageServerLoad } from './$types';
-import QRCode from 'qrcode';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const hostname = url.hostname;
@@ -21,20 +20,11 @@ export const load: PageServerLoad = async ({ url }) => {
 		});
 	}
 
-	// Generate QR code as data URL
+	// Pass the club URL to the client for QR code generation
 	const clubUrl = `https://${club.hostname}`;
-	const qrCodeDataUrl = await QRCode.toDataURL(clubUrl, {
-		width: 300,
-		margin: 2,
-		color: {
-			dark: '#1e293b', // slate-900
-			light: '#ffffff'
-		}
-	});
 
 	return {
 		club,
-		qrCodeDataUrl,
 		clubUrl
 	};
 };

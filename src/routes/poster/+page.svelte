@@ -1,8 +1,28 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	const { club, qrCodeDataUrl, clubUrl } = data;
+	const { club, clubUrl } = data;
+
+	let qrCodeDataUrl = $state<string>('');
+	let isGenerating = $state(true);
+
+	onMount(async () => {
+		// Generate QR code on the client side (browser has Canvas API)
+		const QRCode = await import('qrcode');
+
+		qrCodeDataUrl = await QRCode.toDataURL(clubUrl, {
+			width: 300,
+			margin: 2,
+			color: {
+				dark: '#1e293b', // slate-900
+				light: '#ffffff'
+			}
+		});
+
+		isGenerating = false;
+	});
 
 	function handlePrint() {
 		window.print();
@@ -140,7 +160,28 @@
 		<!-- Right Column: QR Code -->
 		<div class="flex flex-col items-center justify-center">
 			<div class="rounded-xl border-4 border-slate-900 bg-white p-6 shadow-lg">
-				<img src={qrCodeDataUrl} alt="QR Code to {clubUrl}" class="h-auto w-full" />
+				{#if isGenerating}
+					<div class="flex h-[300px] w-[300px] items-center justify-center">
+						<div class="text-center">
+							<svg
+								class="mx-auto mb-2 h-12 w-12 animate-spin text-blue-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+								/>
+							</svg>
+							<p class="text-sm text-slate-600">Generating QR code...</p>
+						</div>
+					</div>
+				{:else}
+					<img src={qrCodeDataUrl} alt="QR Code to {clubUrl}" class="h-auto w-full" />
+				{/if}
 			</div>
 			<p class="mt-4 text-center text-lg font-semibold text-slate-700">
 				Scan for more information
