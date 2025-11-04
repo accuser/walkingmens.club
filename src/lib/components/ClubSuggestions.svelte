@@ -12,12 +12,7 @@
 	let userLocation = $state<{ lat: number; lng: number } | null>(null);
 
 	// Calculate distance between two points using Haversine formula
-	function calculateDistance(
-		lat1: number,
-		lng1: number,
-		lat2: number,
-		lng2: number
-	): number {
+	function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
 		const R = 3959; // Earth's radius in miles
 		const dLat = ((lat2 - lat1) * Math.PI) / 180;
 		const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -78,10 +73,74 @@
 <div class="space-y-8">
 	<!-- Header -->
 	<div class="text-center">
-		<h2 class="mb-4 text-3xl font-bold text-slate-900">Find Your Local Walking Men's Club</h2>
+		<h2 class="mb-4 text-3xl font-bold text-slate-900">Find your local Walking Men's Club</h2>
 		<p class="text-lg text-slate-600">
 			Select a club below to view their meeting times and walking routes
 		</p>
+	</div>
+
+	<!-- Purpose Section -->
+	<div class="mx-auto max-w-3xl rounded-lg bg-white p-8 shadow-md">
+		<div class="space-y-4 text-slate-700">
+			<p class="text-lg leading-relaxed">
+				Walking Men's Clubs bring local men together for regular walks, fresh air, and good company.
+				Whether you're looking to stay active, meet new people, or simply enjoy your local area,
+				you're welcome to join us.
+			</p>
+			<div class="grid gap-6 pt-4 md:grid-cols-3">
+				<div class="text-center">
+					<svg
+						class="mx-auto mb-2 h-8 w-8 text-blue-600"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+						/>
+					</svg>
+					<h3 class="mb-1 font-semibold text-slate-900">Meet People</h3>
+					<p class="text-sm">Connect with others in your community</p>
+				</div>
+				<div class="text-center">
+					<svg
+						class="mx-auto mb-2 h-8 w-8 text-blue-600"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+						/>
+					</svg>
+					<h3 class="mb-1 font-semibold text-slate-900">Stay Active</h3>
+					<p class="text-sm">Regular exercise at your own pace</p>
+				</div>
+				<div class="text-center">
+					<svg
+						class="mx-auto mb-2 h-8 w-8 text-blue-600"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+						/>
+					</svg>
+					<h3 class="mb-1 font-semibold text-slate-900">Explore Local</h3>
+					<p class="text-sm">Discover routes in your area</p>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Geolocation Button -->
@@ -126,12 +185,7 @@
 	{:else}
 		<div class="text-center">
 			<p class="text-green-600">
-				<svg
-					class="inline h-5 w-5"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-				>
+				<svg class="inline h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -156,7 +210,7 @@
 						{club.name}
 					</h3>
 					{#if club.distance !== undefined}
-						<span class="ml-2 whitespace-nowrap text-sm font-medium text-blue-600">
+						<span class="ml-2 text-sm font-medium whitespace-nowrap text-blue-600">
 							{formatDistance(club.distance)}
 						</span>
 					{/if}
@@ -166,7 +220,12 @@
 
 				<div class="space-y-2 text-sm text-slate-700">
 					<div class="flex items-center gap-2">
-						<svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-4 w-4 text-slate-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -178,7 +237,12 @@
 					</div>
 
 					<div class="flex items-center gap-2">
-						<svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-4 w-4 text-slate-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
