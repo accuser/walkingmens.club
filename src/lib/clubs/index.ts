@@ -15,10 +15,6 @@ const clubsByHostname = new Map<string, ClubConfig>(
  * @returns ClubConfig or undefined if not found
  */
 export function getClubByHostname(hostname: string): ClubConfig | undefined {
-	if (hostname === 'walkingmens.club' || hostname === 'localhost') {
-		return clubsByHostname.get('delabole.walkingmens.club');
-	}
-
 	return clubsByHostname.get(hostname);
 }
 
