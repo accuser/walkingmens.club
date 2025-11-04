@@ -6,6 +6,12 @@
         "binding": "ASSETS",
         "directory": ".svelte-kit/cloudflare"
     },
+    "routes": [
+        {
+            "pattern": "*.walkingmens.club/*",
+            "zone_name": "walkingmens.club"
+        }
+    ],
     "observability": {
         "logs": {
             "enabled": true
