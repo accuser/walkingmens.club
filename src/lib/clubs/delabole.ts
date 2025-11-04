@@ -16,7 +16,7 @@ const delaboleRoute = [
 
 export const delabole: ClubConfig = {
 	id: 'delabole',
-	name: 'Delabole Walking Mens Club',
+	name: 'Delabole Walking Men\'s Club',
 	location: 'Delabole, Cornwall',
 	hostname: 'delabole.walkingmens.club',
 	meetingPoint: {
