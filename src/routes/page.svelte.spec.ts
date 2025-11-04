@@ -6,7 +6,8 @@ import Page from './+page.svelte';
 
 describe('/+page.svelte', () => {
 	const mockData = {
-		club: delabole
+		club: delabole,
+		clubs: null
 	};
 
 	it('should render club name in h1', async () => {

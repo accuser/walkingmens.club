@@ -1,25 +1,53 @@
 <script lang="ts">
 	import WalkingRouteMap from '$lib/components/WalkingRouteMap.svelte';
+	import ClubSuggestions from '$lib/components/ClubSuggestions.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	const { club } = data;
+	const { club, clubs } = data;
 </script>
 
 <svelte:head>
-	<title>{club.name}</title>
-	<meta name="description" content={club.description} />
+	{#if club}
+		<title>{club.name}</title>
+		<meta name="description" content={club.description} />
+	{:else}
+		<title>Walking Men's Clubs - Find Your Local Group</title>
+		<meta
+			name="description"
+			content="Find your local walking men's club. Join us for friendly walks, good company, and fresh air."
+		/>
+	{/if}
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-	<div class="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-		<!-- Header -->
-		<header class="mb-12 text-center">
-			<h1 class="mb-4 text-4xl font-bold text-slate-900 sm:text-5xl">
-				{club.name}
-			</h1>
-			<p class="text-xl text-slate-600">{club.location}</p>
-		</header>
+	<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+		{#if clubs}
+			<!-- Landing Page -->
+			<header class="mb-12 text-center">
+				<h1 class="mb-4 text-4xl font-bold text-slate-900 sm:text-5xl">
+					Walking Men's Clubs
+				</h1>
+				<p class="text-xl text-slate-600">
+					Join your local walking group for exercise, friendship, and fresh air
+				</p>
+			</header>
+
+			<ClubSuggestions {clubs} />
+
+			<footer class="mt-16 text-center text-sm text-slate-500">
+				<p>All local men welcome • No booking required • Just turn up and join us</p>
+			</footer>
+		{:else if club}
+			<!-- Individual Club Page -->
+			<div class="mx-auto max-w-4xl">
+				<!-- Header -->
+				<header class="mb-12 text-center">
+					<h1 class="mb-4 text-4xl font-bold text-slate-900 sm:text-5xl">
+						{club.name}
+					</h1>
+					<p class="text-xl text-slate-600">{club.location}</p>
+				</header>
 
 		<!-- Description -->
 		{#if club.description}
@@ -186,9 +214,11 @@
 			</section>
 		{/if}
 
-		<!-- Footer -->
-		<footer class="mt-12 text-center text-sm text-slate-500">
-			<p>All local men welcome • No booking required • Just turn up and join us</p>
-		</footer>
+				<!-- Footer -->
+				<footer class="mt-12 text-center text-sm text-slate-500">
+					<p>All local men welcome • No booking required • Just turn up and join us</p>
+				</footer>
+			</div>
+		{/if}
 	</div>
 </div>
