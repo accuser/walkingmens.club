@@ -4,7 +4,9 @@
       "Bash(tree:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm test:*)",
-      "Bash(pnpm exec playwright install:*)"
+      "Bash(pnpm exec playwright install:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm dev:*)"
     ],
     "deny": [],
     "ask": []
