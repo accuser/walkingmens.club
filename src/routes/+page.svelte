@@ -24,17 +24,18 @@
 	<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
 		{#if clubs}
 			<!-- Landing Page -->
-			<header class="mb-12 text-center">
+			<header class="mb-8 text-center">
 				<h1 class="mb-4 text-4xl font-bold text-slate-900 sm:text-5xl">Walking Men's Clubs</h1>
-				<p class="text-xl text-slate-600">
-					Join your local walking group for exercise, friendship, and fresh air
+				<p class="mb-3 text-xl text-slate-600">
+					Community walking groups supporting men's health and wellbeing
 				</p>
+				<p class="text-lg font-medium text-blue-600">Everyone welcome</p>
 			</header>
 
 			<ClubSuggestions {clubs} />
 
 			<footer class="mt-16 text-center text-sm text-slate-500">
-				<p>Everyone welcome • No booking required • Just turn up and join us</p>
+				<p>Open to all • No booking required • No experience needed • Just turn up and walk with us</p>
 			</footer>
 		{:else if club}
 			<!-- Individual Club Page -->
