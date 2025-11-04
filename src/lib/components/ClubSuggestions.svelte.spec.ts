@@ -10,7 +10,7 @@ describe('ClubSuggestions.svelte', () => {
 	it('should render heading', async () => {
 		render(ClubSuggestions, { clubs: mockClubs });
 
-		const heading = page.getByRole('heading', { name: /find your local walking men's club/i });
+		const heading = page.getByRole('heading', { name: /find your local club/i });
 		await expect.element(heading).toBeInTheDocument();
 	});
 
