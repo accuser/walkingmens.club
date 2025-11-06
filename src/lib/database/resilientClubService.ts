@@ -1,12 +1,14 @@
 /**
  * Resilient club service with fallback mechanisms and error handling
- * Wraps the database service with connection management and fallback to static data
+ * Wraps the database service with connection management, caching, and fallback to static data
  */
 
 import type { ClubConfig } from '../clubs/types';
 import { D1ClubDatabaseService, type ClubDatabaseService } from './clubDatabase';
 import { DatabaseConnectionManager, DatabaseUnavailableError, DatabaseConnectionError } from './connectionManager';
 import { getDatabase } from '../config/database';
+import { CachedClubService, type CachedServiceConfig, DEFAULT_CACHED_SERVICE_CONFIG } from '../services/cachedClubService';
+import { createCacheService } from '../services/clubCache';
 
 /**
  * Fallback data provider interface
@@ -22,25 +24,14 @@ export interface FallbackDataProvider {
 interface ResilientServiceConfig {
 	enableFallback: boolean;
 	fallbackTimeoutMs: number;
-	cacheEnabled: boolean;
-	cacheTtlMs: number;
+	cacheConfig: CachedServiceConfig;
 }
 
 const DEFAULT_CONFIG: ResilientServiceConfig = {
 	enableFallback: true,
 	fallbackTimeoutMs: 2000,
-	cacheEnabled: true,
-	cacheTtlMs: 3600000 // 1 hour
+	cacheConfig: DEFAULT_CACHED_SERVICE_CONFIG
 };
-
-/**
- * Cache entry
- */
-interface CacheEntry<T> {
-	data: T;
-	timestamp: number;
-	ttl: number;
-}
 
 /**
  * Resilient club service with fallback mechanisms
@@ -48,7 +39,7 @@ interface CacheEntry<T> {
 export class ResilientClubService implements ClubDatabaseService {
 	private connectionManager: DatabaseConnectionManager;
 	private databaseService: D1ClubDatabaseService | null = null;
-	private cache = new Map<string, CacheEntry<any>>();
+	private cachedService: CachedClubService | null = null;
 	private isInitialized = false;
 
 	constructor(
@@ -69,6 +60,23 @@ export class ResilientClubService implements ClubDatabaseService {
 			if (this.platform) {
 				const db = getDatabase(this.platform);
 				this.databaseService = new D1ClubDatabaseService(db);
+				
+				// Wrap database service with caching layer
+				const cacheService = createCacheService(this.platform, {
+					enabled: this.config.cacheConfig.enableCaching,
+					defaultTtlMs: this.config.cacheConfig.cacheTtlMs
+				});
+				
+				this.cachedService = new CachedClubService(
+					this.databaseService,
+					cacheService,
+					this.config.cacheConfig,
+					this.platform
+				);
+				
+				// Initialize cached service (warm cache if configured)
+				await this.cachedService.initialize();
+				
 				this.isInitialized = true;
 			} else {
 				console.warn('Platform not available, running in fallback mode');
@@ -87,29 +95,14 @@ export class ResilientClubService implements ClubDatabaseService {
 	async getClubByHostname(hostname: string): Promise<ClubConfig | null> {
 		await this.initialize();
 
-		const cacheKey = `club:hostname:${hostname}`;
-		
-		// Try cache first
-		if (this.config.cacheEnabled) {
-			const cached = this.getFromCache<ClubConfig | null>(cacheKey);
-			if (cached !== undefined) {
-				return cached;
-			}
-		}
-
-		// Try database
-		if (this.databaseService) {
+		// Try cached database service first
+		if (this.cachedService) {
 			try {
 				const result = await this.executeWithFallback(
-					() => this.databaseService!.getClubByHostname(hostname),
+					() => this.cachedService!.getClubByHostname(hostname),
 					() => this.fallbackProvider?.getClubByHostname(hostname) || null,
 					`getClubByHostname(${hostname})`
 				);
-
-				// Cache the result
-				if (this.config.cacheEnabled) {
-					this.setCache(cacheKey, result, this.config.cacheTtlMs);
-				}
 
 				return result;
 			} catch (error) {
@@ -128,29 +121,14 @@ export class ResilientClubService implements ClubDatabaseService {
 	async getAllClubs(): Promise<ClubConfig[]> {
 		await this.initialize();
 
-		const cacheKey = 'clubs:all';
-		
-		// Try cache first
-		if (this.config.cacheEnabled) {
-			const cached = this.getFromCache<ClubConfig[]>(cacheKey);
-			if (cached !== undefined) {
-				return cached;
-			}
-		}
-
-		// Try database
-		if (this.databaseService) {
+		// Try cached database service first
+		if (this.cachedService) {
 			try {
 				const result = await this.executeWithFallback(
-					() => this.databaseService!.getAllClubs(),
+					() => this.cachedService!.getAllClubs(),
 					() => this.fallbackProvider?.getAllClubs() || [],
 					'getAllClubs'
 				);
-
-				// Cache the result
-				if (this.config.cacheEnabled) {
-					this.setCache(cacheKey, result, this.config.cacheTtlMs);
-				}
 
 				return result;
 			} catch (error) {
@@ -169,19 +147,16 @@ export class ResilientClubService implements ClubDatabaseService {
 	async createClub(club: Omit<ClubConfig, 'id'>): Promise<ClubConfig> {
 		await this.initialize();
 
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			throw new DatabaseUnavailableError('Database service not available for write operations');
 		}
 
 		try {
 			const result = await this.connectionManager.executeWithRetry(
 				getDatabase(this.platform!),
-				(db) => new D1ClubDatabaseService(db).createClub(club),
+				() => this.cachedService!.createClub(club),
 				'createClub'
 			);
-
-			// Invalidate relevant cache entries
-			this.invalidateCache(['clubs:all', `club:hostname:${result.hostname}`]);
 
 			return result;
 		} catch (error) {
@@ -196,19 +171,16 @@ export class ResilientClubService implements ClubDatabaseService {
 	async updateClub(id: string, club: Partial<ClubConfig>): Promise<ClubConfig> {
 		await this.initialize();
 
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			throw new DatabaseUnavailableError('Database service not available for write operations');
 		}
 
 		try {
 			const result = await this.connectionManager.executeWithRetry(
 				getDatabase(this.platform!),
-				(db) => new D1ClubDatabaseService(db).updateClub(id, club),
+				() => this.cachedService!.updateClub(id, club),
 				`updateClub(${id})`
 			);
-
-			// Invalidate relevant cache entries
-			this.invalidateCache(['clubs:all', `club:hostname:${result.hostname}`, `club:id:${id}`]);
 
 			return result;
 		} catch (error) {
@@ -223,19 +195,16 @@ export class ResilientClubService implements ClubDatabaseService {
 	async deleteClub(id: string): Promise<void> {
 		await this.initialize();
 
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			throw new DatabaseUnavailableError('Database service not available for write operations');
 		}
 
 		try {
 			await this.connectionManager.executeWithRetry(
 				getDatabase(this.platform!),
-				(db) => new D1ClubDatabaseService(db).deleteClub(id),
+				() => this.cachedService!.deleteClub(id),
 				`deleteClub(${id})`
 			);
-
-			// Invalidate relevant cache entries
-			this.invalidateCache(['clubs:all', `club:id:${id}`]);
 		} catch (error) {
 			console.error('Failed to delete club:', error);
 			throw error;
@@ -248,7 +217,7 @@ export class ResilientClubService implements ClubDatabaseService {
 	async validateHostname(hostname: string): Promise<boolean> {
 		await this.initialize();
 
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			// In fallback mode, check against fallback data
 			return !this.fallbackProvider?.getClubByHostname(hostname);
 		}
@@ -256,7 +225,7 @@ export class ResilientClubService implements ClubDatabaseService {
 		try {
 			return await this.connectionManager.executeWithRetry(
 				getDatabase(this.platform!),
-				(db) => new D1ClubDatabaseService(db).validateHostname(hostname),
+				() => this.cachedService!.validateHostname(hostname),
 				`validateHostname(${hostname})`
 			);
 		} catch (error) {
@@ -272,11 +241,11 @@ export class ResilientClubService implements ClubDatabaseService {
 	async migrateStaticData(): Promise<void> {
 		await this.initialize();
 
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			throw new DatabaseUnavailableError('Database service not available for migration');
 		}
 
-		return this.databaseService.migrateStaticData();
+		return this.cachedService.migrateStaticData();
 	}
 
 	/**
@@ -287,7 +256,7 @@ export class ResilientClubService implements ClubDatabaseService {
 		fallbackOperation: () => T,
 		operationName: string
 	): Promise<T> {
-		if (!this.databaseService) {
+		if (!this.cachedService) {
 			return fallbackOperation();
 		}
 
@@ -307,38 +276,25 @@ export class ResilientClubService implements ClubDatabaseService {
 	}
 
 	/**
-	 * Cache management
+	 * Clear all cache
 	 */
-	private getFromCache<T>(key: string): T | undefined {
-		const entry = this.cache.get(key);
-		if (!entry) return undefined;
-
-		const now = Date.now();
-		if (now - entry.timestamp > entry.ttl) {
-			this.cache.delete(key);
-			return undefined;
+	async clearCache(): Promise<void> {
+		if (this.cachedService) {
+			await this.cachedService.clearCache();
 		}
-
-		return entry.data as T;
-	}
-
-	private setCache<T>(key: string, data: T, ttl: number): void {
-		this.cache.set(key, {
-			data,
-			timestamp: Date.now(),
-			ttl
-		});
-	}
-
-	private invalidateCache(keys: string[]): void {
-		keys.forEach(key => this.cache.delete(key));
 	}
 
 	/**
-	 * Clear all cache
+	 * Get cache statistics
 	 */
-	clearCache(): void {
-		this.cache.clear();
+	getCacheStats() {
+		return this.cachedService?.getCacheStats() || {
+			size: 0,
+			hits: 0,
+			misses: 0,
+			hitRate: 0,
+			enabled: false
+		};
 	}
 
 	/**
@@ -347,13 +303,13 @@ export class ResilientClubService implements ClubDatabaseService {
 	async getHealthStatus(): Promise<{
 		database: boolean;
 		fallback: boolean;
-		cache: { size: number; enabled: boolean };
+		cache: { size: number; enabled: boolean; hits: number; misses: number; hitRate: number };
 		connections: ReturnType<DatabaseConnectionManager['getPoolStats']>;
 	}> {
 		await this.initialize();
 
 		let databaseHealthy = false;
-		if (this.databaseService && this.platform) {
+		if (this.cachedService && this.platform) {
 			try {
 				const db = getDatabase(this.platform);
 				databaseHealthy = await this.connectionManager.executeWithRetry(
@@ -369,13 +325,12 @@ export class ResilientClubService implements ClubDatabaseService {
 			}
 		}
 
+		const cacheStats = this.getCacheStats();
+
 		return {
 			database: databaseHealthy,
 			fallback: !!this.fallbackProvider,
-			cache: {
-				size: this.cache.size,
-				enabled: this.config.cacheEnabled
-			},
+			cache: cacheStats,
 			connections: this.connectionManager.getPoolStats()
 		};
 	}
@@ -385,7 +340,11 @@ export class ResilientClubService implements ClubDatabaseService {
 	 */
 	async shutdown(): Promise<void> {
 		await this.connectionManager.shutdown();
-		this.clearCache();
+		
+		if (this.cachedService) {
+			await this.cachedService.shutdown();
+		}
+		
 		this.isInitialized = false;
 	}
 }
