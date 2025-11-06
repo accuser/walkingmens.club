@@ -1,24 +1,56 @@
 {
-    "name": "walking-mens-club",
-    "main": ".svelte-kit/cloudflare/_worker.js",
-    "compatibility_date": "2025-11-01",
-    "assets": {
-        "binding": "ASSETS",
-        "directory": ".svelte-kit/cloudflare"
-    },
-    "routes": [
-        {
-            "pattern": "walkingmens.club/*",
-            "zone_name": "walkingmens.club"
-        },
-        {
-            "pattern": "*.walkingmens.club/*",
-            "zone_name": "walkingmens.club"
-        }
-    ],
-    "observability": {
-        "logs": {
-            "enabled": true
-        }
-    }
+	"name": "walking-mens-club",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2025-11-01",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"routes": [
+		{
+			"pattern": "walkingmens.club/*",
+			"zone_name": "walkingmens.club"
+		},
+		{
+			"pattern": "*.walkingmens.club/*",
+			"zone_name": "walkingmens.club"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "walking-mens-club-db",
+			"database_id": "placeholder-database-id"
+		},
+		{
+			"binding": "walking_mens_club_db",
+			"database_name": "walking-mens-club-db",
+			"database_id": "d660ffec-1adc-40ce-8d0b-125860b2ce41"
+		}
+	],
+	"env": {
+		"development": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "walking-mens-club-db-dev",
+					"database_id": "placeholder-dev-database-id"
+				}
+			]
+		},
+		"production": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "walking-mens-club-db",
+					"database_id": "placeholder-prod-database-id"
+				}
+			]
+		}
+	},
+	"observability": {
+		"logs": {
+			"enabled": true
+		}
+	}
 }
