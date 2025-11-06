@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Feature Branch Workflow",
+  "description": "Automatically manages feature branch creation, atomic commits, and PR creation for development tasks",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.svelte",
+      "src/**/*.js",
+      "database/**/*.sql",
+      "*.md",
+      "package.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file has been modified in the project. Please analyze the changes and:\n\n1. If this appears to be the start of a new primary task/feature, create a new feature branch with a descriptive name\n2. Make an atomic commit with a clear, descriptive commit message that explains what was changed and why\n3. If the task/feature appears to be complete (based on the nature and scope of changes), create a pull request with:\n   - A clear title summarizing the feature/task\n   - A description of what was implemented\n   - Any relevant context or considerations\n\nUse git best practices for branch naming (feature/, bugfix/, etc.) and commit messages (imperative mood, clear and concise)."
+  }
+}
