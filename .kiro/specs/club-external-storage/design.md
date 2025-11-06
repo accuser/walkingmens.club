@@ -103,16 +103,16 @@ CREATE INDEX idx_route_points_route_sequence ON route_points(route_id, sequence_
 
 ```typescript
 export interface ClubDatabaseService {
-    // Club CRUD operations
-    getClubByHostname(hostname: string): Promise<ClubConfig | null>;
-    getAllClubs(): Promise<ClubConfig[]>;
-    createClub(club: Omit<ClubConfig, 'id'>): Promise<ClubConfig>;
-    updateClub(id: string, club: Partial<ClubConfig>): Promise<ClubConfig>;
-    deleteClub(id: string): Promise<void>;
-    
-    // Utility methods
-    validateHostname(hostname: string): Promise<boolean>;
-    migrateStaticData(): Promise<void>;
+	// Club CRUD operations
+	getClubByHostname(hostname: string): Promise<ClubConfig | null>;
+	getAllClubs(): Promise<ClubConfig[]>;
+	createClub(club: Omit<ClubConfig, 'id'>): Promise<ClubConfig>;
+	updateClub(id: string, club: Partial<ClubConfig>): Promise<ClubConfig>;
+	deleteClub(id: string): Promise<void>;
+
+	// Utility methods
+	validateHostname(hostname: string): Promise<boolean>;
+	migrateStaticData(): Promise<void>;
 }
 ```
 
@@ -122,10 +122,10 @@ export interface ClubDatabaseService {
 
 ```typescript
 export interface ClubCacheService {
-    get(key: string): Promise<ClubConfig | null>;
-    set(key: string, club: ClubConfig, ttl?: number): Promise<void>;
-    invalidate(key: string): Promise<void>;
-    invalidateAll(): Promise<void>;
+	get(key: string): Promise<ClubConfig | null>;
+	set(key: string, club: ClubConfig, ttl?: number): Promise<void>;
+	invalidate(key: string): Promise<void>;
+	invalidateAll(): Promise<void>;
 }
 ```
 
@@ -143,20 +143,24 @@ export interface ClubCacheService {
 ### 4. Admin UI Components
 
 **File: `src/routes/admin/+layout.svelte`**
+
 - Authentication wrapper
 - Admin navigation
 - Permission checks
 
 **File: `src/routes/admin/clubs/+page.svelte`**
+
 - Club list with search/filter
 - Quick actions (edit, delete, view)
 
 **File: `src/routes/admin/clubs/new/+page.svelte`**
+
 - Club creation form
 - Hostname validation
 - Route point editor
 
 **File: `src/routes/admin/clubs/[id]/edit/+page.svelte`**
+
 - Club editing form
 - Route visualization
 - Delete confirmation
@@ -169,22 +173,22 @@ The existing `ClubConfig` interface will be extended to support database operati
 
 ```typescript
 export interface ClubConfigWithMeta extends ClubConfig {
-    createdAt: Date;
-    updatedAt: Date;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export interface ClubFormData {
-    name: string;
-    location: string;
-    hostname: string;
-    description?: string;
-    meetingPoint: MeetingPoint;
-    schedule: MeetingSchedule;
-    route: WalkingRoute;
-    contact?: {
-        email?: string;
-        phone?: string;
-    };
+	name: string;
+	location: string;
+	hostname: string;
+	description?: string;
+	meetingPoint: MeetingPoint;
+	schedule: MeetingSchedule;
+	route: WalkingRoute;
+	contact?: {
+		email?: string;
+		phone?: string;
+	};
 }
 ```
 
@@ -192,26 +196,26 @@ export interface ClubFormData {
 
 ```typescript
 export interface ClubEntity {
-    id: string;
-    name: string;
-    location: string;
-    hostname: string;
-    description?: string;
-    contact_email?: string;
-    contact_phone?: string;
-    created_at: string;
-    updated_at: string;
+	id: string;
+	name: string;
+	location: string;
+	hostname: string;
+	description?: string;
+	contact_email?: string;
+	contact_phone?: string;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface MeetingPointEntity {
-    id: number;
-    club_id: string;
-    name: string;
-    address: string;
-    postcode: string;
-    lat: number;
-    lng: number;
-    what3words?: string;
+	id: number;
+	club_id: string;
+	name: string;
+	address: string;
+	postcode: string;
+	lat: number;
+	lng: number;
+	what3words?: string;
 }
 ```
 
@@ -310,21 +314,25 @@ export interface MeetingPointEntity {
 ## Migration Plan
 
 ### Phase 1: Database Setup
+
 1. Create D1 database and tables
 2. Implement database service layer
 3. Create migration script for existing data
 
 ### Phase 2: API Compatibility
+
 1. Update existing club service to use database
 2. Implement caching layer
 3. Ensure backward compatibility
 
 ### Phase 3: Admin Interface
+
 1. Create admin authentication
 2. Build club management UI
 3. Implement admin API endpoints
 
 ### Phase 4: Testing & Deployment
+
 1. Comprehensive testing
 2. Performance optimization
 3. Production deployment with rollback plan

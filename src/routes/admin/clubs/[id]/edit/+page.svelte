@@ -8,7 +8,7 @@ Admin club edit form with route visualization
 	import { onMount } from 'svelte';
 	import Toast from '$lib/components/admin/Toast.svelte';
 	import LoadingOverlay from '$lib/components/admin/LoadingOverlay.svelte';
-	import ConfirmDialog from '$lib/components/admin/ConfirmDialog.svelte';
+	import { resolve } from '$app/paths';
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -23,8 +23,6 @@ Admin club edit form with route visualization
 	let showToast = false;
 	let toastMessage = '';
 	let toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-	let showUnsavedChangesDialog = false;
-	let hasUnsavedChanges = false;
 
 	const club: ClubConfig = data.club;
 
@@ -37,9 +35,12 @@ Admin club edit form with route visualization
 		meetingPointName: form?.data?.meetingPoint?.name || club.meetingPoint.name,
 		meetingPointAddress: form?.data?.meetingPoint?.address || club.meetingPoint.address,
 		meetingPointPostcode: form?.data?.meetingPoint?.postcode || club.meetingPoint.postcode,
-		meetingPointLat: form?.data?.meetingPoint?.coordinates?.lat || club.meetingPoint.coordinates.lat,
-		meetingPointLng: form?.data?.meetingPoint?.coordinates?.lng || club.meetingPoint.coordinates.lng,
-		meetingPointWhat3words: form?.data?.meetingPoint?.what3words || club.meetingPoint.what3words || '',
+		meetingPointLat:
+			form?.data?.meetingPoint?.coordinates?.lat || club.meetingPoint.coordinates.lat,
+		meetingPointLng:
+			form?.data?.meetingPoint?.coordinates?.lng || club.meetingPoint.coordinates.lng,
+		meetingPointWhat3words:
+			form?.data?.meetingPoint?.what3words || club.meetingPoint.what3words || '',
 		scheduleDay: form?.data?.schedule?.day || club.schedule.day,
 		scheduleTime: form?.data?.schedule?.time || club.schedule.time,
 		scheduleFrequency: form?.data?.schedule?.frequency || club.schedule.frequency || 'Weekly',
@@ -74,7 +75,9 @@ Admin club edit form with route visualization
 		hostnameError = '';
 
 		try {
-			const response = await fetch(`/api/admin/hostname/validate?hostname=${encodeURIComponent(hostname)}`);
+			const response = await fetch(
+				`/api/admin/hostname/validate?hostname=${encodeURIComponent(hostname)}`
+			);
 			const result = await response.json();
 
 			if (response.ok) {
@@ -108,7 +111,7 @@ Admin club edit form with route visualization
 
 		hostnameAvailable = null;
 		hostnameError = '';
-		
+
 		// Debounce the check
 		clearTimeout(hostnameCheckTimeout);
 		hostnameCheckTimeout = setTimeout(() => {
@@ -120,7 +123,7 @@ Admin club edit form with route visualization
 	function addRoutePoint() {
 		const lat = parseFloat(newPointLat);
 		const lng = parseFloat(newPointLng);
-		
+
 		if (isNaN(lat) || isNaN(lng)) {
 			showErrorToast('Please enter valid coordinates');
 			return;
@@ -166,10 +169,10 @@ Admin club edit form with route visualization
 
 	function updateRoutePoint() {
 		if (editingPoint === null) return;
-		
+
 		const lat = parseFloat(newPointLat);
 		const lng = parseFloat(newPointLng);
-		
+
 		if (isNaN(lat) || isNaN(lng)) {
 			showErrorToast('Please enter valid coordinates');
 			return;
@@ -187,7 +190,7 @@ Admin club edit form with route visualization
 
 		routePoints[editingPoint] = { lat, lng };
 		routePoints = [...routePoints]; // Trigger reactivity
-		
+
 		editingPoint = null;
 		newPointLat = '';
 		newPointLng = '';
@@ -204,11 +207,6 @@ Admin club edit form with route visualization
 	let hostnameCheckTimeout: number;
 
 	// Toast helpers
-	function showSuccessToast(message: string) {
-		toastMessage = message;
-		toastType = 'success';
-		showToast = true;
-	}
 
 	function showErrorToast(message: string) {
 		toastMessage = message;
@@ -229,10 +227,12 @@ Admin club edit form with route visualization
 	// Track form changes
 	$: {
 		// Simple change detection - in a real app you might want more sophisticated tracking
-		if (formData.name !== club.name || 
-			formData.location !== club.location || 
+		if (
+			formData.name !== club.name ||
+			formData.location !== club.location ||
 			formData.hostname !== club.hostname ||
-			routePoints.length !== club.route.points.length) {
+			routePoints.length !== club.route.points.length
+		) {
 			hasUnsavedChanges = true;
 		}
 	}
@@ -261,9 +261,7 @@ Admin club edit form with route visualization
 				<p class="page-subtitle">Editing: {club.name}</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs" class="btn btn-outline">
-					← Back to Clubs
-				</a>
+				<a href={resolve('/admin/clubs')} class="btn btn-outline"> ← Back to Clubs </a>
 			</div>
 		</div>
 	</div>
@@ -275,7 +273,7 @@ Admin club edit form with route visualization
 				<div class="error-suggestions">
 					<p>Suggestions:</p>
 					<ul>
-						{#each form.suggestions as suggestion}
+						{#each form.suggestions as suggestion, index (index)}
 							<li>{suggestion}</li>
 						{/each}
 					</ul>
@@ -302,7 +300,7 @@ Admin club edit form with route visualization
 		<!-- Basic Information -->
 		<div class="form-section">
 			<h2 class="section-title">Basic Information</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="name" class="form-label required">Club Name</label>
@@ -348,7 +346,7 @@ Admin club edit form with route visualization
 							title="Only lowercase letters, numbers, and hyphens allowed"
 						/>
 						<span class="hostname-suffix">.walkingmens.club</span>
-						
+
 						{#if formData.hostname !== originalHostname}
 							{#if hostnameChecking}
 								<div class="hostname-status checking">
@@ -356,18 +354,14 @@ Admin club edit form with route visualization
 									Checking...
 								</div>
 							{:else if hostnameAvailable === true}
-								<div class="hostname-status available">
-									✅ Available
-								</div>
+								<div class="hostname-status available">✅ Available</div>
 							{:else if hostnameAvailable === false || hostnameError}
 								<div class="hostname-status unavailable">
 									❌ {hostnameError || 'Not available'}
 								</div>
 							{/if}
 						{:else}
-							<div class="hostname-status current">
-								ℹ️ Current hostname
-							</div>
+							<div class="hostname-status current">ℹ️ Current hostname</div>
 						{/if}
 					</div>
 				</div>
@@ -389,7 +383,7 @@ Admin club edit form with route visualization
 		<!-- Meeting Point -->
 		<div class="form-section">
 			<h2 class="section-title">Meeting Point</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="meetingPointName" class="form-label required">Meeting Point Name</label>
@@ -475,7 +469,7 @@ Admin club edit form with route visualization
 		<!-- Schedule -->
 		<div class="form-section">
 			<h2 class="section-title">Meeting Schedule</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="scheduleDay" class="form-label required">Day of Week</label>
@@ -531,7 +525,7 @@ Admin club edit form with route visualization
 		<!-- Walking Route -->
 		<div class="form-section">
 			<h2 class="section-title">Walking Route</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="routeName" class="form-label required">Route Name</label>
@@ -669,7 +663,7 @@ Admin club edit form with route visualization
 							<div class="route-points-list">
 								<h4>Route Points ({routePoints.length})</h4>
 								<div class="points-table">
-									{#each routePoints as point, index}
+									{#each routePoints as point, index (index)}
 										<div class="point-row">
 											<div class="point-info">
 												<span class="point-number">{index + 1}</span>
@@ -750,7 +744,7 @@ Admin club edit form with route visualization
 		<!-- Contact Information -->
 		<div class="form-section">
 			<h2 class="section-title">Contact Information</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="contactEmail" class="form-label">Email</label>
@@ -780,10 +774,11 @@ Admin club edit form with route visualization
 
 		<!-- Form Actions -->
 		<div class="form-actions">
-			<button 
-				type="submit" 
-				class="btn btn-primary" 
-				disabled={loading || (hostnameAvailable === false && formData.hostname !== originalHostname)}
+			<button
+				type="submit"
+				class="btn btn-primary"
+				disabled={loading ||
+					(hostnameAvailable === false && formData.hostname !== originalHostname)}
 			>
 				{#if loading}
 					<span class="loading-spinner"></span>
@@ -792,27 +787,17 @@ Admin club edit form with route visualization
 					Update Club
 				{/if}
 			</button>
-			
-			<a href="/admin/clubs" class="btn btn-outline">
-				Cancel
-			</a>
+
+			<a href={resolve('/admin/clubs')} class="btn btn-outline"> Cancel </a>
 		</div>
 	</form>
 </div>
 
 <!-- Toast Notifications -->
-<Toast
-	bind:show={showToast}
-	message={toastMessage}
-	type={toastType}
-	on:close={closeToast}
-/>
+<Toast bind:show={showToast} message={toastMessage} type={toastType} on:close={closeToast} />
 
 <!-- Loading Overlay -->
-<LoadingOverlay
-	show={loading}
-	message="Updating club..."
-/>
+<LoadingOverlay show={loading} message="Updating club..." />
 
 <style>
 	/* Inherit most styles from the new club page */

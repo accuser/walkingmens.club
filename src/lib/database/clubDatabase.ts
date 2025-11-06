@@ -15,7 +15,7 @@ import type {
 } from './entities';
 import { mapEntitiesToClubConfig, mapClubConfigToEntities } from './mappers';
 import { validateClubConfig, ValidationError } from './validation';
-import { DATABASE_CONFIG } from '../config/database';
+
 import { performanceMonitor } from '../services/performanceMonitor';
 
 /**
@@ -44,11 +44,10 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 	async getClubByHostname(hostname: string): Promise<ClubConfig | null> {
 		const startTime = Date.now();
 		try {
-			const clubData = await this.getClubWithRelations(
-				'SELECT * FROM clubs WHERE hostname = ?',
-				[hostname]
-			);
-			
+			const clubData = await this.getClubWithRelations('SELECT * FROM clubs WHERE hostname = ?', [
+				hostname
+			]);
+
 			const duration = Date.now() - startTime;
 			performanceMonitor.recordQuery({
 				queryType: 'getClubByHostname',
@@ -56,7 +55,7 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 				success: true,
 				rowsAffected: clubData ? 1 : 0
 			});
-			
+
 			return clubData ? mapEntitiesToClubConfig(clubData) : null;
 		} catch (error) {
 			const duration = Date.now() - startTime;
@@ -66,7 +65,7 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 				success: false,
 				error: error instanceof Error ? error.message : String(error)
 			});
-			
+
 			console.error('Error fetching club by hostname:', error);
 			throw new Error(`Failed to fetch club with hostname: ${hostname}`);
 		}
@@ -94,13 +93,12 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 			}
 
 			const clubs: ClubConfig[] = [];
-			
+
 			for (const club of clubsResult.results) {
-				const clubData = await this.getClubWithRelations(
-					'SELECT * FROM clubs WHERE id = ?',
-					[club.id]
-				);
-				
+				const clubData = await this.getClubWithRelations('SELECT * FROM clubs WHERE id = ?', [
+					club.id
+				]);
+
 				if (clubData) {
 					clubs.push(mapEntitiesToClubConfig(clubData));
 				}
@@ -123,7 +121,7 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 				success: false,
 				error: error instanceof Error ? error.message : String(error)
 			});
-			
+
 			console.error('Error fetching all clubs:', error);
 			throw new Error('Failed to fetch all clubs');
 		}
@@ -150,72 +148,92 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 
 		try {
 			const entities = mapClubConfigToEntities(clubConfig);
-			
+
 			// Use transaction to ensure data consistency
 			const result = await this.db.batch([
 				// Insert club
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					INSERT INTO clubs (id, name, location, hostname, description, contact_email, contact_phone, created_at, updated_at)
 					VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-				`).bind(
-					entities.club.id,
-					entities.club.name,
-					entities.club.location,
-					entities.club.hostname,
-					entities.club.description,
-					entities.club.contact_email,
-					entities.club.contact_phone
-				),
+				`
+					)
+					.bind(
+						entities.club.id,
+						entities.club.name,
+						entities.club.location,
+						entities.club.hostname,
+						entities.club.description,
+						entities.club.contact_email,
+						entities.club.contact_phone
+					),
 
 				// Insert meeting point
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					INSERT INTO meeting_points (club_id, name, address, postcode, lat, lng, what3words)
 					VALUES (?, ?, ?, ?, ?, ?, ?)
-				`).bind(
-					entities.meetingPoint.club_id,
-					entities.meetingPoint.name,
-					entities.meetingPoint.address,
-					entities.meetingPoint.postcode,
-					entities.meetingPoint.lat,
-					entities.meetingPoint.lng,
-					entities.meetingPoint.what3words
-				),
+				`
+					)
+					.bind(
+						entities.meetingPoint.club_id,
+						entities.meetingPoint.name,
+						entities.meetingPoint.address,
+						entities.meetingPoint.postcode,
+						entities.meetingPoint.lat,
+						entities.meetingPoint.lng,
+						entities.meetingPoint.what3words
+					),
 
 				// Insert schedule
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					INSERT INTO meeting_schedules (club_id, day, time, frequency)
 					VALUES (?, ?, ?, ?)
-				`).bind(
-					entities.schedule.club_id,
-					entities.schedule.day,
-					entities.schedule.time,
-					entities.schedule.frequency
-				),
+				`
+					)
+					.bind(
+						entities.schedule.club_id,
+						entities.schedule.day,
+						entities.schedule.time,
+						entities.schedule.frequency
+					),
 
 				// Insert route
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					INSERT INTO walking_routes (club_id, name, description, distance, duration, difficulty)
 					VALUES (?, ?, ?, ?, ?, ?)
-				`).bind(
-					entities.route.club_id,
-					entities.route.name,
-					entities.route.description,
-					entities.route.distance,
-					entities.route.duration,
-					entities.route.difficulty
-				)
+				`
+					)
+					.bind(
+						entities.route.club_id,
+						entities.route.name,
+						entities.route.description,
+						entities.route.distance,
+						entities.route.duration,
+						entities.route.difficulty
+					)
 			]);
 
 			// Get the route ID from the insert result
 			const routeId = result[3].meta.last_row_id;
-			
+
 			// Insert route points
 			if (entities.routePoints.length > 0) {
-				const routePointInserts = entities.routePoints.map(point =>
-					this.db.prepare(`
+				const routePointInserts = entities.routePoints.map((point) =>
+					this.db
+						.prepare(
+							`
 						INSERT INTO route_points (route_id, sequence_order, lat, lng)
 						VALUES (?, ?, ?, ?)
-					`).bind(routeId, point.sequence_order, point.lat, point.lng)
+					`
+						)
+						.bind(routeId, point.sequence_order, point.lat, point.lng)
 				);
 
 				await this.db.batch(routePointInserts);
@@ -224,7 +242,9 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 			return clubConfig;
 		} catch (error) {
 			console.error('Error creating club:', error);
-			throw new Error(`Failed to create club: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to create club: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -240,7 +260,7 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 
 		// Merge updates with existing data
 		const updatedClub: ClubConfig = { ...existingClub, ...updates, id };
-		
+
 		// Validate the updated configuration
 		validateClubConfig(updatedClub);
 
@@ -254,65 +274,76 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 
 		try {
 			const entities = mapClubConfigToEntities(updatedClub);
-			
+
 			// Use transaction for consistency
 			await this.db.batch([
 				// Update club
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					UPDATE clubs 
 					SET name = ?, location = ?, hostname = ?, description = ?, 
 						contact_email = ?, contact_phone = ?, updated_at = datetime('now')
 					WHERE id = ?
-				`).bind(
-					entities.club.name,
-					entities.club.location,
-					entities.club.hostname,
-					entities.club.description,
-					entities.club.contact_email,
-					entities.club.contact_phone,
-					id
-				),
+				`
+					)
+					.bind(
+						entities.club.name,
+						entities.club.location,
+						entities.club.hostname,
+						entities.club.description,
+						entities.club.contact_email,
+						entities.club.contact_phone,
+						id
+					),
 
 				// Update meeting point
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					UPDATE meeting_points 
 					SET name = ?, address = ?, postcode = ?, lat = ?, lng = ?, what3words = ?
 					WHERE club_id = ?
-				`).bind(
-					entities.meetingPoint.name,
-					entities.meetingPoint.address,
-					entities.meetingPoint.postcode,
-					entities.meetingPoint.lat,
-					entities.meetingPoint.lng,
-					entities.meetingPoint.what3words,
-					id
-				),
+				`
+					)
+					.bind(
+						entities.meetingPoint.name,
+						entities.meetingPoint.address,
+						entities.meetingPoint.postcode,
+						entities.meetingPoint.lat,
+						entities.meetingPoint.lng,
+						entities.meetingPoint.what3words,
+						id
+					),
 
 				// Update schedule
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					UPDATE meeting_schedules 
 					SET day = ?, time = ?, frequency = ?
 					WHERE club_id = ?
-				`).bind(
-					entities.schedule.day,
-					entities.schedule.time,
-					entities.schedule.frequency,
-					id
-				),
+				`
+					)
+					.bind(entities.schedule.day, entities.schedule.time, entities.schedule.frequency, id),
 
 				// Update route
-				this.db.prepare(`
+				this.db
+					.prepare(
+						`
 					UPDATE walking_routes 
 					SET name = ?, description = ?, distance = ?, duration = ?, difficulty = ?
 					WHERE club_id = ?
-				`).bind(
-					entities.route.name,
-					entities.route.description,
-					entities.route.distance,
-					entities.route.duration,
-					entities.route.difficulty,
-					id
-				)
+				`
+					)
+					.bind(
+						entities.route.name,
+						entities.route.description,
+						entities.route.distance,
+						entities.route.duration,
+						entities.route.difficulty,
+						id
+					)
 			]);
 
 			// Update route points - delete existing and insert new ones
@@ -330,11 +361,15 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 
 				// Insert new route points
 				if (entities.routePoints.length > 0) {
-					const routePointInserts = entities.routePoints.map(point =>
-						this.db.prepare(`
+					const routePointInserts = entities.routePoints.map((point) =>
+						this.db
+							.prepare(
+								`
 							INSERT INTO route_points (route_id, sequence_order, lat, lng)
 							VALUES (?, ?, ?, ?)
-						`).bind(routeResult.id, point.sequence_order, point.lat, point.lng)
+						`
+							)
+							.bind(routeResult.id, point.sequence_order, point.lat, point.lng)
 					);
 
 					await this.db.batch(routePointInserts);
@@ -344,7 +379,9 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 			return updatedClub;
 		} catch (error) {
 			console.error('Error updating club:', error);
-			throw new Error(`Failed to update club: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to update club: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -360,17 +397,16 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 			}
 
 			// Delete club (cascade will handle related records)
-			const result = await this.db
-				.prepare('DELETE FROM clubs WHERE id = ?')
-				.bind(id)
-				.run();
+			const result = await this.db.prepare('DELETE FROM clubs WHERE id = ?').bind(id).run();
 
 			if (result.meta.changes === 0) {
 				throw new Error(`Failed to delete club with ID ${id}`);
 			}
 		} catch (error) {
 			console.error('Error deleting club:', error);
-			throw new Error(`Failed to delete club: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to delete club: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -417,18 +453,17 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 			throw new Error(`Migration failed: ${result.errors.join('; ')}`);
 		}
 
-		console.log(`Migration completed successfully. Migrated clubs: ${result.migratedClubs.join(', ')}`);
+		console.log(
+			`Migration completed successfully. Migrated clubs: ${result.migratedClubs.join(', ')}`
+		);
 	}
 
 	/**
 	 * Private helper: Get club by ID
 	 */
 	private async getClubById(id: string): Promise<ClubConfig | null> {
-		const clubData = await this.getClubWithRelations(
-			'SELECT * FROM clubs WHERE id = ?',
-			[id]
-		);
-		
+		const clubData = await this.getClubWithRelations('SELECT * FROM clubs WHERE id = ?', [id]);
+
 		return clubData ? mapEntitiesToClubConfig(clubData) : null;
 	}
 
@@ -439,8 +474,11 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 		clubQuery: string,
 		params: unknown[]
 	): Promise<ClubWithRelationsEntity | null> {
-		const club = await this.db.prepare(clubQuery).bind(...params).first<ClubEntity>();
-		
+		const club = await this.db
+			.prepare(clubQuery)
+			.bind(...params)
+			.first<ClubEntity>();
+
 		if (!club) {
 			return null;
 		}

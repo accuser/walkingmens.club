@@ -25,11 +25,15 @@
 		}
 
 		// Initialize the map
-		map = L.map(mapContainer).setView([meetingPoint.coordinates.lat, meetingPoint.coordinates.lng], 14);
+		map = L.map(mapContainer).setView(
+			[meetingPoint.coordinates.lat, meetingPoint.coordinates.lng],
+			14
+		);
 
 		// Add OpenStreetMap tiles
 		const tileLayer: TileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+			attribution:
+				'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 			maxZoom: 19
 		});
 		tileLayer.addTo(map);
@@ -66,9 +70,12 @@
 </script>
 
 <svelte:head>
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+	<link
+		rel="stylesheet"
+		href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-		crossorigin=""/>
+		crossorigin=""
+	/>
 </svelte:head>
 
 <div bind:this={mapContainer} class="h-96 w-full rounded-lg shadow-lg"></div>

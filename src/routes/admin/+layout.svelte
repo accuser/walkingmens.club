@@ -1,23 +1,25 @@
 <!--
 Admin layout component with authentication wrapper and navigation
 -->
+<!-- eslint-disable svelte/no-navigation-without-resolve -->
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import ErrorBoundary from '$lib/components/admin/ErrorBoundary.svelte';
 
-	export let data: LayoutData;
+	let { data }: { data: LayoutData } = $props();
 
-	let showMobileMenu = false;
+	let showMobileMenu = $state(false);
 
 	// Navigation items
 	const navItems = [
-		{ href: '/admin', label: 'Dashboard', icon: '🏠' },
-		{ href: '/admin/clubs', label: 'Clubs', icon: '🚶' },
-		{ href: '/admin/system', label: 'System Status', icon: '📊' },
-		{ href: '/admin/settings', label: 'Settings', icon: '⚙️' }
+		{ path: '/admin', label: 'Dashboard', icon: '🏠' },
+		{ path: '/admin/clubs', label: 'Clubs', icon: '🚶' },
+		{ path: '/admin/system', label: 'System Status', icon: '📊' },
+		{ path: '/admin/settings', label: 'Settings', icon: '⚙️' }
 	];
 
 	// Handle logout
@@ -31,7 +33,7 @@ Admin layout component with authentication wrapper and navigation
 			});
 
 			if (response.ok) {
-				goto('/admin/login');
+				goto(resolve('/admin/login'));
 			} else {
 				console.error('Logout failed');
 			}
@@ -41,9 +43,11 @@ Admin layout component with authentication wrapper and navigation
 	}
 
 	// Close mobile menu when route changes
-	$: if ($page.url.pathname) {
-		showMobileMenu = false;
-	}
+	$effect(() => {
+		if (page.url.pathname) {
+			showMobileMenu = false;
+		}
+	});
 
 	onMount(() => {
 		// Initialize any admin-specific functionality
@@ -63,7 +67,7 @@ Admin layout component with authentication wrapper and navigation
 				<button
 					class="mobile-menu-toggle"
 					class:active={showMobileMenu}
-					on:click={() => (showMobileMenu = !showMobileMenu)}
+					onclick={() => (showMobileMenu = !showMobileMenu)}
 					aria-label="Toggle navigation menu"
 				>
 					<span></span>
@@ -71,16 +75,14 @@ Admin layout component with authentication wrapper and navigation
 					<span></span>
 				</button>
 				<h1 class="admin-title">
-					<a href="/admin">Walking Mens Club Admin</a>
+					<a href={resolve('/admin')}>Walking Mens Club Admin</a>
 				</h1>
 			</div>
 
 			<div class="header-right">
 				<div class="user-info">
 					<span class="user-name">Welcome, {data.user?.username}</span>
-					<button class="logout-btn" on:click={handleLogout} type="button">
-						Logout
-					</button>
+					<button class="logout-btn" onclick={handleLogout} type="button"> Logout </button>
 				</div>
 			</div>
 		</div>
@@ -89,13 +91,13 @@ Admin layout component with authentication wrapper and navigation
 	<!-- Navigation -->
 	<nav class="admin-nav" class:mobile-open={showMobileMenu}>
 		<ul class="nav-list">
-			{#each navItems as item}
+			{#each navItems as item (item.path)}
 				<li class="nav-item">
 					<a
-						href={item.href}
+						href={resolve(item.path)}
 						class="nav-link"
-						class:active={$page.url.pathname === item.href}
-						aria-current={$page.url.pathname === item.href ? 'page' : undefined}
+						class:active={page.url.pathname === item.path}
+						aria-current={page.url.pathname === item.path ? 'page' : undefined}
 					>
 						<span class="nav-icon">{item.icon}</span>
 						<span class="nav-label">{item.label}</span>
@@ -108,7 +110,9 @@ Admin layout component with authentication wrapper and navigation
 	<!-- Main content -->
 	<main class="admin-main">
 		<div class="main-content">
-			<ErrorBoundary fallback="An error occurred in the admin panel. Please try refreshing the page.">
+			<ErrorBoundary
+				fallback="An error occurred in the admin panel. Please try refreshing the page."
+			>
 				<slot />
 			</ErrorBoundary>
 		</div>

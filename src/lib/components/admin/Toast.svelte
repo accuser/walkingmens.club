@@ -2,31 +2,41 @@
 Toast notification component
 -->
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
-	export let show = false;
-	export let message = '';
-	export let type: 'success' | 'error' | 'warning' | 'info' = 'info';
-	export let duration = 5000; // Auto-hide after 5 seconds
-	export let persistent = false; // Don't auto-hide
+	interface Props {
+		show?: boolean;
+		message?: string;
+		type?: 'success' | 'error' | 'warning' | 'info';
+		duration?: number; // Auto-hide after 5 seconds
+		persistent?: boolean; // Don't auto-hide
+		onclose?: () => void;
+	}
 
-	const dispatch = createEventDispatcher<{
-		close: void;
-	}>();
+	let {
+		show = $bindable(false),
+		message = '',
+		type = 'info',
+		duration = 5000,
+		persistent = false,
+		onclose
+	}: Props = $props();
 
 	let timeoutId: number;
 
 	function handleClose() {
 		show = false;
-		dispatch('close');
+		onclose?.();
 	}
 
-	$: if (show && !persistent && duration > 0) {
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => {
-			handleClose();
-		}, duration);
-	}
+	$effect(() => {
+		if (show && !persistent && duration > 0) {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => {
+				handleClose();
+			}, duration);
+		}
+	});
 
 	onMount(() => {
 		return () => {
@@ -49,12 +59,7 @@ Toast notification component
 			<span class="toast-icon">{icons[type]}</span>
 			<span class="toast-message">{message}</span>
 		</div>
-		<button
-			type="button"
-			class="toast-close"
-			on:click={handleClose}
-			aria-label="Close notification"
-		>
+		<button type="button" class="toast-close" onclick={handleClose} aria-label="Close notification">
 			×
 		</button>
 	</div>
@@ -67,7 +72,9 @@ Toast notification component
 		right: 1rem;
 		background: white;
 		border-radius: 0.5rem;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
 		border: 1px solid #e5e7eb;
 		padding: 1rem;
 		display: flex;

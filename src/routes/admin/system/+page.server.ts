@@ -23,15 +23,14 @@ export const load: PageServerLoad = async (event) => {
 	try {
 		// Get initial system health status
 		const healthStatus = await getServiceHealthStatus();
-		
+
 		return {
 			initialHealthStatus: healthStatus,
 			timestamp: new Date().toISOString()
 		};
-		
 	} catch (error) {
 		console.error('Failed to load system status:', error);
-		
+
 		// Return minimal data if health check fails
 		return {
 			initialHealthStatus: {

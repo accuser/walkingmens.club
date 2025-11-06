@@ -10,7 +10,7 @@ import { requireAuth } from '$lib/auth/middleware';
 export const load: LayoutServerLoad = async (event) => {
 	// Check authentication
 	const authResult = await requireAuth(event);
-	
+
 	if (!authResult.authenticated) {
 		// Redirect to login page
 		throw redirect(302, '/admin/login');

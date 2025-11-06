@@ -5,38 +5,39 @@ Admin clubs list and management page
 	import type { PageData } from './$types';
 	import type { ClubConfig } from '$lib/clubs/types';
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+
 	import ConfirmDialog from '$lib/components/admin/ConfirmDialog.svelte';
 	import Toast from '$lib/components/admin/Toast.svelte';
+	import { resolve } from '$app/paths';
 	import LoadingOverlay from '$lib/components/admin/LoadingOverlay.svelte';
 
-	export let data: PageData;
+	let { data }: { data: PageData } = $props();
 
-	let clubs: ClubConfig[] = data.clubs;
-	let filteredClubs: ClubConfig[] = clubs;
-	let searchTerm = '';
-	let sortBy: 'name' | 'location' | 'hostname' | 'created' = 'name';
-	let sortOrder: 'asc' | 'desc' = 'asc';
-	let loading = false;
-	let error = '';
+	let clubs = $state<ClubConfig[]>(data.clubs);
+	let filteredClubs = $state<ClubConfig[]>([]);
+	let searchTerm = $state('');
+	let sortBy = $state<'name' | 'location' | 'hostname' | 'created'>('name');
+	let sortOrder = $state<'asc' | 'desc'>('asc');
+	let loading = $state(false);
+	let error = $state('');
 
 	// Dialog and notification state
-	let showDeleteDialog = false;
-	let clubToDelete: ClubConfig | null = null;
-	let deleteLoading = false;
-	let showToast = false;
-	let toastMessage = '';
-	let toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
+	let showDeleteDialog = $state(false);
+	let clubToDelete = $state<ClubConfig | null>(null);
+	let deleteLoading = $state(false);
+	let showToast = $state(false);
+	let toastMessage = $state('');
+	let toastType = $state<'success' | 'error' | 'warning' | 'info'>('info');
 
 	// Pagination
-	let currentPage = 1;
-	let itemsPerPage = 10;
-	let totalPages = 1;
-	let paginatedClubs: ClubConfig[] = [];
+	let currentPage = $state(1);
+	let itemsPerPage = $state(10);
+	let totalPages = $state(1);
+	let paginatedClubs = $state<ClubConfig[]>([]);
 
 	// Search and filter functionality
-	$: {
-		filteredClubs = clubs.filter(club => {
+	$effect(() => {
+		filteredClubs = clubs.filter((club) => {
 			const searchLower = searchTerm.toLowerCase();
 			return (
 				club.name.toLowerCase().includes(searchLower) ||
@@ -82,11 +83,11 @@ Admin clubs list and management page
 		// Update pagination
 		totalPages = Math.ceil(filteredClubs.length / itemsPerPage);
 		currentPage = Math.min(currentPage, totalPages || 1);
-		
+
 		const startIndex = (currentPage - 1) * itemsPerPage;
 		const endIndex = startIndex + itemsPerPage;
 		paginatedClubs = filteredClubs.slice(startIndex, endIndex);
-	}
+	});
 
 	// Handle club deletion
 	function handleDeleteClick(club: ClubConfig) {
@@ -111,11 +112,11 @@ Admin clubs list and management page
 			}
 
 			// Remove club from local state
-			clubs = clubs.filter(c => c.id !== clubToDelete.id);
-			
+			clubs = clubs.filter((c) => c.id !== clubToDelete.id);
+
 			// Show success toast
-			showSuccessToast(`Club "${clubToDelete.name}" deleted successfully`);
-			
+			showSuccessToast(`Club "${clubToDelete?.name}" deleted successfully`);
+
 			// Close dialog
 			showDeleteDialog = false;
 			clubToDelete = null;
@@ -143,12 +144,6 @@ Admin clubs list and management page
 	function showErrorToast(message: string) {
 		toastMessage = message;
 		toastType = 'error';
-		showToast = true;
-	}
-
-	function showInfoToast(message: string) {
-		toastMessage = message;
-		toastType = 'info';
 		showToast = true;
 	}
 
@@ -188,7 +183,7 @@ Admin clubs list and management page
 				<p class="page-subtitle">Manage walking club configurations</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs/new" class="btn btn-primary">
+				<a href={resolve('/admin/clubs/new')} class="btn btn-primary">
 					<span class="btn-icon">➕</span>
 					Add New Club
 				</a>
@@ -215,7 +210,7 @@ Admin clubs list and management page
 					/>
 					<span class="search-icon">🔍</span>
 				</div>
-				
+
 				<div class="sort-controls">
 					<label for="sort-select" class="sort-label">Sort by:</label>
 					<select id="sort-select" class="sort-select" bind:value={sortBy}>
@@ -227,7 +222,7 @@ Admin clubs list and management page
 					<button
 						class="sort-order-btn"
 						class:desc={sortOrder === 'desc'}
-						on:click={() => handleSort(sortBy)}
+						onclick={() => handleSort(sortBy)}
 						title="Toggle sort order"
 					>
 						{sortOrder === 'asc' ? '↑' : '↓'}
@@ -250,7 +245,7 @@ Admin clubs list and management page
 					<thead>
 						<tr>
 							<th>
-								<button class="sort-header" on:click={() => handleSort('name')}>
+								<button class="sort-header" onclick={() => handleSort('name')}>
 									Name
 									{#if sortBy === 'name'}
 										<span class="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
@@ -258,7 +253,7 @@ Admin clubs list and management page
 								</button>
 							</th>
 							<th>
-								<button class="sort-header" on:click={() => handleSort('location')}>
+								<button class="sort-header" onclick={() => handleSort('location')}>
 									Location
 									{#if sortBy === 'location'}
 										<span class="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
@@ -266,7 +261,7 @@ Admin clubs list and management page
 								</button>
 							</th>
 							<th>
-								<button class="sort-header" on:click={() => handleSort('hostname')}>
+								<button class="sort-header" onclick={() => handleSort('hostname')}>
 									Hostname
 									{#if sortBy === 'hostname'}
 										<span class="sort-indicator">{sortOrder === 'asc' ? '↑' : '↓'}</span>
@@ -290,9 +285,9 @@ Admin clubs list and management page
 								</td>
 								<td class="club-location">{club.location}</td>
 								<td class="club-hostname">
-									<a 
-										href="https://{club.hostname}" 
-										target="_blank" 
+									<a
+										href="https://{club.hostname}"
+										target="_blank"
 										rel="noopener noreferrer"
 										class="hostname-link"
 									>
@@ -304,16 +299,16 @@ Admin clubs list and management page
 								</td>
 								<td class="club-actions">
 									<div class="action-buttons">
-										<a 
-											href="/admin/clubs/{club.id}/edit" 
+										<a
+											href={resolve(`/admin/clubs/${club.id}/edit`)}
 											class="btn btn-sm btn-secondary"
 											title="Edit club"
 										>
 											✏️ Edit
 										</a>
-										<a 
-											href="https://{club.hostname}" 
-											target="_blank" 
+										<a
+											href="https://{club.hostname}"
+											target="_blank"
 											rel="noopener noreferrer"
 											class="btn btn-sm btn-outline"
 											title="View club website"
@@ -322,7 +317,7 @@ Admin clubs list and management page
 										</a>
 										<button
 											class="btn btn-sm btn-danger"
-											on:click={() => handleDeleteClick(club)}
+											onclick={() => handleDeleteClick(club)}
 											disabled={loading || deleteLoading}
 											title="Delete club"
 										>
@@ -342,28 +337,29 @@ Admin clubs list and management page
 					<button
 						class="pagination-btn"
 						disabled={currentPage === 1}
-						on:click={() => goToPage(currentPage - 1)}
+						onclick={() => goToPage(currentPage - 1)}
 					>
 						Previous
 					</button>
-					
+
 					<div class="pagination-pages">
-						{#each Array(totalPages) as _, i}
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+						{#each Array(totalPages) as _, i (i)}
 							{@const page = i + 1}
 							<button
 								class="pagination-page"
 								class:active={page === currentPage}
-								on:click={() => goToPage(page)}
+								onclick={() => goToPage(page)}
 							>
 								{page}
 							</button>
 						{/each}
 					</div>
-					
+
 					<button
 						class="pagination-btn"
 						disabled={currentPage === totalPages}
-						on:click={() => goToPage(currentPage + 1)}
+						onclick={() => goToPage(currentPage + 1)}
 					>
 						Next
 					</button>
@@ -376,15 +372,13 @@ Admin clubs list and management page
 					{#if searchTerm}
 						<h3>No clubs found</h3>
 						<p>No clubs match your search criteria. Try adjusting your search terms.</p>
-						<button class="btn btn-outline" on:click={() => (searchTerm = '')}>
+						<button class="btn btn-outline" onclick={() => (searchTerm = '')}>
 							Clear Search
 						</button>
 					{:else}
 						<h3>No clubs yet</h3>
 						<p>Get started by creating your first walking club configuration.</p>
-						<a href="/admin/clubs/new" class="btn btn-primary">
-							Add Your First Club
-						</a>
+						<a href={resolve('/admin/clubs/new')} class="btn btn-primary"> Add Your First Club </a>
 					{/if}
 				</div>
 			</div>
@@ -396,28 +390,22 @@ Admin clubs list and management page
 <ConfirmDialog
 	bind:show={showDeleteDialog}
 	title="Delete Club"
-	message={clubToDelete ? `Are you sure you want to delete "${clubToDelete.name}"? This action cannot be undone and will remove all club data including routes and meeting information.` : ''}
+	message={clubToDelete
+		? `Are you sure you want to delete "${clubToDelete.name}"? This action cannot be undone and will remove all club data including routes and meeting information.`
+		: ''}
 	confirmText="Delete Club"
 	cancelText="Cancel"
 	confirmVariant="danger"
 	loading={deleteLoading}
-	on:confirm={confirmDelete}
-	on:cancel={cancelDelete}
+	onconfirm={confirmDelete}
+	oncancel={cancelDelete}
 />
 
 <!-- Toast Notifications -->
-<Toast
-	bind:show={showToast}
-	message={toastMessage}
-	type={toastType}
-	on:close={closeToast}
-/>
+<Toast bind:show={showToast} message={toastMessage} type={toastType} onclose={closeToast} />
 
 <!-- Loading Overlay -->
-<LoadingOverlay
-	show={loading && !deleteLoading}
-	message="Loading clubs..."
-/>
+<LoadingOverlay show={loading && !deleteLoading} message="Loading clubs..." />
 
 <style>
 	.clubs-page {

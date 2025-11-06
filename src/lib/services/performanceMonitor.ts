@@ -143,7 +143,7 @@ export class PerformanceMonitoringService {
 
 		this.requestCount++;
 		this.responseTimeSum += responseTime;
-		
+
 		if (isError) {
 			this.errorCount++;
 		}
@@ -159,20 +159,23 @@ export class PerformanceMonitoringService {
 
 		// Database stats
 		const totalQueries = recentQueries.length;
-		const successfulQueries = recentQueries.filter(q => q.success);
-		const avgQueryTime = totalQueries > 0 
-			? successfulQueries.reduce((sum, q) => sum + q.duration, 0) / successfulQueries.length 
-			: 0;
-		const slowQueries = recentQueries.filter(q => q.duration > this.config.slowQueryThreshold).length;
-		const errorRate = totalQueries > 0 ? ((totalQueries - successfulQueries.length) / totalQueries) * 100 : 0;
+		const successfulQueries = recentQueries.filter((q) => q.success);
+		const avgQueryTime =
+			totalQueries > 0
+				? successfulQueries.reduce((sum, q) => sum + q.duration, 0) / successfulQueries.length
+				: 0;
+		const slowQueries = recentQueries.filter(
+			(q) => q.duration > this.config.slowQueryThreshold
+		).length;
+		const errorRate =
+			totalQueries > 0 ? ((totalQueries - successfulQueries.length) / totalQueries) * 100 : 0;
 
 		// Cache stats
 		const totalCacheOps = recentCache.length;
-		const cacheHits = recentCache.filter(c => c.hit).length;
+		const cacheHits = recentCache.filter((c) => c.hit).length;
 		const hitRate = totalCacheOps > 0 ? (cacheHits / totalCacheOps) * 100 : 0;
-		const avgCacheTime = totalCacheOps > 0 
-			? recentCache.reduce((sum, c) => sum + c.duration, 0) / totalCacheOps 
-			: 0;
+		const avgCacheTime =
+			totalCacheOps > 0 ? recentCache.reduce((sum, c) => sum + c.duration, 0) / totalCacheOps : 0;
 
 		// System stats
 		const uptime = Math.floor((now - this.systemStartTime) / 1000);
@@ -210,9 +213,9 @@ export class PerformanceMonitoringService {
 	 */
 	getSlowQueries(limit: number = 10): SlowQuery[] {
 		const slowQueries = this.queryMetrics
-			.filter(q => q.duration > this.config.slowQueryThreshold)
+			.filter((q) => q.duration > this.config.slowQueryThreshold)
 			.reduce((acc, query) => {
-				const existing = acc.find(sq => sq.query === query.queryType);
+				const existing = acc.find((sq) => sq.query === query.queryType);
 				if (existing) {
 					existing.frequency++;
 					if (query.duration > existing.duration) {
@@ -311,7 +314,7 @@ export class PerformanceMonitoringService {
 			recommendations.push({
 				category: 'database' as const,
 				priority: 'high' as const,
-				recommendation: `Optimize slow queries: ${slowQueries.map(q => q.query).join(', ')}`,
+				recommendation: `Optimize slow queries: ${slowQueries.map((q) => q.query).join(', ')}`,
 				impact: 'Could improve overall system performance significantly'
 			});
 		}
@@ -408,7 +411,7 @@ export class PerformanceMonitoringService {
 	 */
 	private getRecentMetrics<T extends { timestamp: number }>(metrics: T[], windowMs: number): T[] {
 		const cutoff = Date.now() - windowMs;
-		return metrics.filter(m => m.timestamp > cutoff);
+		return metrics.filter((m) => m.timestamp > cutoff);
 	}
 
 	/**
@@ -429,8 +432,8 @@ export class PerformanceMonitoringService {
 	private startCleanupTimer(): void {
 		this.cleanupInterval = setInterval(() => {
 			const cutoff = Date.now() - this.config.metricsRetentionMs;
-			this.queryMetrics = this.queryMetrics.filter(m => m.timestamp > cutoff);
-			this.cacheMetrics = this.cacheMetrics.filter(m => m.timestamp > cutoff);
+			this.queryMetrics = this.queryMetrics.filter((m) => m.timestamp > cutoff);
+			this.cacheMetrics = this.cacheMetrics.filter((m) => m.timestamp > cutoff);
 		}, 300000); // Clean up every 5 minutes
 	}
 

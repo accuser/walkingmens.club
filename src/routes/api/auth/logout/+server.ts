@@ -12,7 +12,7 @@ export const POST: RequestHandler = async (event) => {
 	try {
 		// Get session cookie
 		const sessionId = event.cookies.get(AUTH_CONFIG.SESSION_COOKIE_NAME);
-		
+
 		if (sessionId && event.platform?.env?.DB) {
 			// Destroy session in database
 			const authService = new AuthService(event.platform.env.DB);
@@ -25,10 +25,10 @@ export const POST: RequestHandler = async (event) => {
 		return json({ success: true });
 	} catch (error) {
 		console.error('Logout error:', error);
-		
+
 		// Still clear the cookie even if database operation fails
 		clearAuthCookie(event);
-		
+
 		return json({ success: true }); // Always return success for logout
 	}
 };

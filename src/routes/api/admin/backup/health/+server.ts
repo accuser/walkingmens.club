@@ -35,16 +35,16 @@ export const GET: RequestHandler = async ({ platform, request }) => {
 	try {
 		const db = getDatabase(platform);
 		const service = getBackupService(platform);
-		
+
 		// Perform comprehensive health check
 		const healthResult = await service.performHealthCheck();
-		
+
 		// Get performance statistics
 		const performanceStats = performanceMonitor.getPerformanceStats();
-		
+
 		// Get backup statistics
 		const backupStats = service.getBackupStats();
-		
+
 		// Additional system checks
 		const systemHealth = await performSystemHealthChecks(db);
 
@@ -75,7 +75,10 @@ export const GET: RequestHandler = async ({ platform, request }) => {
 		});
 	} catch (err) {
 		console.error('Health check failed:', err);
-		throw error(500, `Health check failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		throw error(
+			500,
+			`Health check failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+		);
 	}
 };
 
@@ -101,14 +104,17 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 		});
 	} catch (err) {
 		console.error('Manual health check failed:', err);
-		throw error(500, `Health check failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		throw error(
+			500,
+			`Health check failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+		);
 	}
 };
 
 /**
  * Perform additional system health checks
  */
-async function performSystemHealthChecks(db: any): Promise<{
+async function performSystemHealthChecks(db: unknown): Promise<{
 	healthy: boolean;
 	checks: Array<{
 		name: string;
@@ -140,11 +146,17 @@ async function performSystemHealthChecks(db: any): Promise<{
 
 	// Check table counts
 	try {
-		const tables = ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'];
+		const tables = [
+			'clubs',
+			'meeting_points',
+			'meeting_schedules',
+			'walking_routes',
+			'route_points'
+		];
 		for (const table of tables) {
 			const result = await db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first();
-			const count = (result as any)?.count || 0;
-			
+			const count = (result as unknown)?.count || 0;
+
 			checks.push({
 				name: `Table ${table}`,
 				status: count >= 0 ? 'pass' : 'warn',
@@ -169,7 +181,7 @@ async function performSystemHealthChecks(db: any): Promise<{
 		message: `${diskUsage.toFixed(1)}% used`,
 		value: `${diskUsage.toFixed(1)}%`
 	});
-	
+
 	if (diskUsage >= 95) healthy = false;
 
 	// Check memory usage (simulated)
@@ -180,7 +192,7 @@ async function performSystemHealthChecks(db: any): Promise<{
 		message: `${memoryUsage.toFixed(1)}% used`,
 		value: `${memoryUsage.toFixed(1)}%`
 	});
-	
+
 	if (memoryUsage >= 95) healthy = false;
 
 	return { healthy, checks };
@@ -190,9 +202,9 @@ async function performSystemHealthChecks(db: any): Promise<{
  * Generate health alerts based on system status
  */
 function generateHealthAlerts(
-	healthResult: any,
-	performanceStats: any,
-	backupStats: any
+	healthResult: { healthy: boolean; checks: Array<{ status: string; name: string }> },
+	performanceStats: { avgResponseTime: number; errorRate: number },
+	backupStats: { successRate: number; oldestBackup?: Date }
 ): Array<{
 	type: 'error' | 'warning' | 'info';
 	message: string;
@@ -204,7 +216,7 @@ function generateHealthAlerts(
 
 	// Database health alerts
 	if (!healthResult.healthy) {
-		const failedChecks = healthResult.checks.filter((c: any) => c.status === 'fail');
+		const failedChecks = healthResult.checks.filter((c) => c.status === 'fail');
 		alerts.push({
 			type: 'error' as const,
 			message: `Database health check failed: ${failedChecks.length} checks failed`,
@@ -260,7 +272,8 @@ function generateHealthAlerts(
 
 	// Check for stale backups
 	if (backupStats.newestBackup) {
-		const daysSinceLastBackup = (Date.now() - new Date(backupStats.newestBackup).getTime()) / (1000 * 60 * 60 * 24);
+		const daysSinceLastBackup =
+			(Date.now() - new Date(backupStats.newestBackup).getTime()) / (1000 * 60 * 60 * 24);
 		if (daysSinceLastBackup > 7) {
 			alerts.push({
 				type: 'warning' as const,

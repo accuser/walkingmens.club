@@ -13,7 +13,7 @@ export const actions: Actions = {
 	create: async (event) => {
 		try {
 			const formData = await event.request.formData();
-			
+
 			// Extract form data
 			const clubData = {
 				name: formData.get('name')?.toString(),
@@ -40,7 +40,9 @@ export const actions: Actions = {
 					description: formData.get('routeDescription')?.toString(),
 					distance: formData.get('routeDistance')?.toString() || undefined,
 					duration: formData.get('routeDuration')?.toString() || undefined,
-					difficulty: formData.get('routeDifficulty')?.toString() as 'easy' | 'moderate' | 'challenging' || 'easy',
+					difficulty:
+						(formData.get('routeDifficulty')?.toString() as 'easy' | 'moderate' | 'challenging') ||
+						'easy',
 					points: [] // Will be populated by the route editor
 				},
 				contact: {
@@ -51,10 +53,16 @@ export const actions: Actions = {
 
 			// Validate required fields
 			const requiredFields = [
-				'name', 'location', 'hostname',
-				'meetingPointName', 'meetingPointAddress', 'meetingPointPostcode',
-				'scheduleDay', 'scheduleTime',
-				'routeName', 'routeDescription'
+				'name',
+				'location',
+				'hostname',
+				'meetingPointName',
+				'meetingPointAddress',
+				'meetingPointPostcode',
+				'scheduleDay',
+				'scheduleTime',
+				'routeName',
+				'routeDescription'
 			];
 
 			for (const field of requiredFields) {
@@ -68,7 +76,10 @@ export const actions: Actions = {
 			}
 
 			// Validate coordinates
-			if (clubData.meetingPoint.coordinates.lat === 0 || clubData.meetingPoint.coordinates.lng === 0) {
+			if (
+				clubData.meetingPoint.coordinates.lat === 0 ||
+				clubData.meetingPoint.coordinates.lng === 0
+			) {
 				return fail(400, {
 					error: 'Meeting point coordinates are required',
 					data: clubData
@@ -94,15 +105,15 @@ export const actions: Actions = {
 				});
 			}
 
-			const result = await response.json();
-			
+			await response.json();
+
 			// Redirect to clubs list on success
 			throw redirect(302, '/admin/clubs');
 		} catch (error) {
 			if (error instanceof Response) {
 				throw error; // Re-throw redirect responses
 			}
-			
+
 			console.error('Create club action error:', error);
 			return fail(500, {
 				error: 'An unexpected error occurred',

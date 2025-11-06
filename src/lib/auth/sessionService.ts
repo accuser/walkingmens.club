@@ -19,7 +19,7 @@ export class SessionService {
 	): Promise<AdminSession> {
 		const sessionId = this.generateSessionId();
 		const expiresAt = new Date(Date.now() + AUTH_CONFIG.SESSION_DURATION);
-		
+
 		const session: AdminSession = {
 			id: sessionId,
 			userId: user.id,
@@ -31,10 +31,12 @@ export class SessionService {
 
 		try {
 			await this.db
-				.prepare(`
+				.prepare(
+					`
 					INSERT INTO admin_sessions (id, user_id, expires_at, created_at, ip_address, user_agent)
 					VALUES (?, ?, ?, ?, ?, ?)
-				`)
+				`
+				)
 				.bind(
 					session.id,
 					session.userId,
@@ -64,12 +66,14 @@ export class SessionService {
 	async validateSession(sessionId: string): Promise<SessionValidationResult> {
 		try {
 			const sessionResult = await this.db
-				.prepare(`
+				.prepare(
+					`
 					SELECT s.*, u.id as user_id, u.username, u.email, u.role, u.created_at as user_created_at, u.last_login_at
 					FROM admin_sessions s
 					JOIN admin_users u ON s.user_id = u.id
 					WHERE s.id = ? AND s.expires_at > datetime('now')
-				`)
+				`
+				)
 				.bind(sessionId)
 				.first<{
 					id: string;
@@ -129,10 +133,7 @@ export class SessionService {
 	 */
 	async destroySession(sessionId: string): Promise<void> {
 		try {
-			await this.db
-				.prepare('DELETE FROM admin_sessions WHERE id = ?')
-				.bind(sessionId)
-				.run();
+			await this.db.prepare('DELETE FROM admin_sessions WHERE id = ?').bind(sessionId).run();
 		} catch (error) {
 			console.error('Error destroying session:', error);
 			throw new Error('Failed to destroy session');
@@ -144,9 +145,7 @@ export class SessionService {
 	 */
 	async cleanupExpiredSessions(): Promise<void> {
 		try {
-			await this.db
-				.prepare('DELETE FROM admin_sessions WHERE expires_at <= datetime("now")')
-				.run();
+			await this.db.prepare('DELETE FROM admin_sessions WHERE expires_at <= datetime("now")').run();
 		} catch (error) {
 			console.error('Error cleaning up expired sessions:', error);
 		}
@@ -158,11 +157,13 @@ export class SessionService {
 	async getUserSessions(userId: string): Promise<AdminSession[]> {
 		try {
 			const result = await this.db
-				.prepare(`
+				.prepare(
+					`
 					SELECT * FROM admin_sessions 
 					WHERE user_id = ? AND expires_at > datetime('now')
 					ORDER BY created_at DESC
-				`)
+				`
+				)
 				.bind(userId)
 				.all<{
 					id: string;
@@ -173,7 +174,7 @@ export class SessionService {
 					user_agent?: string;
 				}>();
 
-			return (result.results || []).map(row => ({
+			return (result.results || []).map((row) => ({
 				id: row.id,
 				userId: row.user_id,
 				expiresAt: new Date(row.expires_at),

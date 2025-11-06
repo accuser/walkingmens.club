@@ -23,7 +23,7 @@ export async function requireAuth(event: RequestEvent): Promise<AuthMiddlewareRe
 	try {
 		// Get session cookie
 		const sessionId = event.cookies.get(AUTH_CONFIG.SESSION_COOKIE_NAME);
-		
+
 		if (!sessionId) {
 			return {
 				authenticated: false,

@@ -42,10 +42,12 @@ export class CachedClubService implements ClubDatabaseService {
 		private config: CachedServiceConfig = DEFAULT_CACHED_SERVICE_CONFIG,
 		private platform?: App.Platform
 	) {
-		this.cacheService = cacheService || createCacheService(platform, {
-			enabled: config.enableCaching,
-			defaultTtlMs: config.cacheTtlMs
-		});
+		this.cacheService =
+			cacheService ||
+			createCacheService(platform, {
+				enabled: config.enableCaching,
+				defaultTtlMs: config.cacheTtlMs
+			});
 	}
 
 	/**
@@ -67,7 +69,7 @@ export class CachedClubService implements ClubDatabaseService {
 
 		// Cache miss - get from database
 		const club = await this.databaseService.getClubByHostname(hostname);
-		
+
 		// Update cache if club found
 		if (club) {
 			await this.cacheService.set(cacheKey, club, this.config.cacheTtlMs);
@@ -88,17 +90,13 @@ export class CachedClubService implements ClubDatabaseService {
 		// For getAllClubs, we'll use a different approach:
 		// 1. Try to get from database (this is typically called less frequently)
 		// 2. Cache individual clubs by hostname for future getClubByHostname calls
-		
+
 		const clubs = await this.databaseService.getAllClubs();
-		
+
 		// Cache individual clubs by hostname for future lookups
 		if (clubs.length > 0) {
-			const cachePromises = clubs.map(club => 
-				this.cacheService.set(
-					`club:hostname:${club.hostname}`,
-					club,
-					this.config.cacheTtlMs
-				)
+			const cachePromises = clubs.map((club) =>
+				this.cacheService.set(`club:hostname:${club.hostname}`, club, this.config.cacheTtlMs)
 			);
 			await Promise.all(cachePromises);
 		}
@@ -145,7 +143,7 @@ export class CachedClubService implements ClubDatabaseService {
 				// Try to get from cache first, then database
 				const cacheKey = `club:id:${id}`;
 				clubToDelete = await this.cacheService.get(cacheKey);
-				
+
 				if (!clubToDelete) {
 					// Not in cache, need to get from database to know hostname for cache invalidation
 					clubToDelete = await this.getClubById(id);
@@ -175,7 +173,7 @@ export class CachedClubService implements ClubDatabaseService {
 	 */
 	async migrateStaticData(): Promise<void> {
 		const result = await this.databaseService.migrateStaticData();
-		
+
 		// Clear all cache after migration
 		if (this.config.enableCaching) {
 			await this.cacheService.invalidateAll();
@@ -225,7 +223,7 @@ export class CachedClubService implements ClubDatabaseService {
 		// This is a simplified implementation - in a real scenario,
 		// we might want to add a getClubById method to the database service
 		const clubs = await this.databaseService.getAllClubs();
-		return clubs.find(club => club.id === id) || null;
+		return clubs.find((club) => club.id === id) || null;
 	}
 
 	/**
@@ -244,9 +242,7 @@ export class CachedClubService implements ClubDatabaseService {
 			keysToInvalidate.push(`club:id:${oldId}`);
 		}
 
-		const invalidationPromises = keysToInvalidate.map(key => 
-			this.cacheService.invalidate(key)
-		);
+		const invalidationPromises = keysToInvalidate.map((key) => this.cacheService.invalidate(key));
 
 		await Promise.all(invalidationPromises);
 	}
@@ -264,8 +260,11 @@ export class CachedClubService implements ClubDatabaseService {
 	 * Shutdown the service
 	 */
 	async shutdown(): Promise<void> {
-		if (this.cacheService && typeof (this.cacheService as any).shutdown === 'function') {
-			(this.cacheService as any).shutdown();
+		if (
+			this.cacheService &&
+			typeof (this.cacheService as { shutdown?: () => void }).shutdown === 'function'
+		) {
+			(this.cacheService as { shutdown: () => void }).shutdown();
 		}
 	}
 }

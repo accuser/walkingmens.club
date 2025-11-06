@@ -23,7 +23,7 @@ export const load: PageServerLoad = async (event) => {
 		}
 
 		const data = await response.json();
-		
+
 		return {
 			clubs: data.clubs || []
 		};

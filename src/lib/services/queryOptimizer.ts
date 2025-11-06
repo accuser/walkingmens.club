@@ -44,10 +44,13 @@ export class QueryOptimizerService {
 			// Get query execution plan
 			const explainQuery = `EXPLAIN QUERY PLAN ${query}`;
 			const planResult = await this.db.prepare(explainQuery).all();
-			
-			const executionPlan = planResult.results
-				?.map((row: any) => `${row.detail || row.notused || 'N/A'}`)
-				.join('\n') || 'No execution plan available';
+
+			const executionPlan =
+				planResult.results
+					?.map(
+						(row: { detail?: string; notused?: string }) => `${row.detail || row.notused || 'N/A'}`
+					)
+					.join('\n') || 'No execution plan available';
 
 			// Analyze the plan for optimization opportunities
 			const analysis = this.analyzeExecutionPlan(executionPlan, query);
@@ -82,7 +85,7 @@ export class QueryOptimizerService {
 		try {
 			// Check existing indexes
 			const existingIndexes = await this.getExistingIndexes();
-			
+
 			// Analyze common query patterns and recommend indexes
 			const commonQueries = [
 				'SELECT * FROM clubs WHERE hostname = ?',
@@ -93,10 +96,7 @@ export class QueryOptimizerService {
 
 			for (const query of commonQueries) {
 				const analysis = await this.analyzeQuery(query);
-				const tableRecommendations = this.generateIndexRecommendations(
-					analysis, 
-					existingIndexes
-				);
+				const tableRecommendations = this.generateIndexRecommendations(analysis, existingIndexes);
 				recommendations.push(...tableRecommendations);
 			}
 
@@ -129,8 +129,10 @@ export class QueryOptimizerService {
 		}
 
 		// Add LIMIT if missing for potentially large result sets
-		if (!query.toUpperCase().includes('LIMIT') && 
-			(query.includes('clubs') || query.includes('meeting_points'))) {
+		if (
+			!query.toUpperCase().includes('LIMIT') &&
+			(query.includes('clubs') || query.includes('meeting_points'))
+		) {
 			// Only suggest LIMIT for queries that might return many rows
 			improvements.push('Consider adding LIMIT clause for large result sets');
 		}
@@ -201,19 +203,26 @@ export class QueryOptimizerService {
 		};
 	}> {
 		try {
-			const tables = ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'];
+			const tables = [
+				'clubs',
+				'meeting_points',
+				'meeting_schedules',
+				'walking_routes',
+				'route_points'
+			];
 			const tableStats = [];
 
 			for (const table of tables) {
 				const countResult = await this.db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first();
-				const indexResult = await this.db.prepare(
-					`SELECT COUNT(*) as count FROM sqlite_master WHERE type='index' AND tbl_name=?`
-				).bind(table).first();
+				const indexResult = await this.db
+					.prepare(`SELECT COUNT(*) as count FROM sqlite_master WHERE type='index' AND tbl_name=?`)
+					.bind(table)
+					.first();
 
 				tableStats.push({
 					table,
-					rowCount: (countResult as any)?.count || 0,
-					indexCount: (indexResult as any)?.count || 0,
+					rowCount: (countResult as { count?: number })?.count || 0,
+					indexCount: (indexResult as { count?: number })?.count || 0,
 					avgRowSize: 0 // SQLite doesn't provide this easily
 				});
 			}
@@ -242,7 +251,10 @@ export class QueryOptimizerService {
 	/**
 	 * Analyze execution plan for optimization opportunities
 	 */
-	private analyzeExecutionPlan(plan: string, query: string): {
+	private analyzeExecutionPlan(
+		plan: string,
+		query: string
+	): {
 		cost: number;
 		indexUsage: string[];
 		recommendations: string[];
@@ -261,7 +273,7 @@ export class QueryOptimizerService {
 		// Check for index usage
 		const indexMatches = plan.match(/USING INDEX (\w+)/g);
 		if (indexMatches) {
-			indexUsage.push(...indexMatches.map(match => match.replace('USING INDEX ', '')));
+			indexUsage.push(...indexMatches.map((match) => match.replace('USING INDEX ', '')));
 		} else if (query.includes('WHERE')) {
 			recommendations.push('WHERE clause not using index - consider adding appropriate index');
 		}
@@ -269,7 +281,9 @@ export class QueryOptimizerService {
 		// Check for sorting
 		if (plan.includes('USE TEMP B-TREE FOR ORDER BY')) {
 			cost += 5;
-			recommendations.push('Query requires temporary sorting - consider adding index on ORDER BY columns');
+			recommendations.push(
+				'Query requires temporary sorting - consider adding index on ORDER BY columns'
+			);
 		}
 
 		return {
@@ -282,23 +296,29 @@ export class QueryOptimizerService {
 	/**
 	 * Get existing database indexes
 	 */
-	private async getExistingIndexes(): Promise<Array<{
-		name: string;
-		table: string;
-		columns: string[];
-		unique: boolean;
-	}>> {
+	private async getExistingIndexes(): Promise<
+		Array<{
+			name: string;
+			table: string;
+			columns: string[];
+			unique: boolean;
+		}>
+	> {
 		try {
-			const result = await this.db.prepare(
-				`SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'`
-			).all();
+			const result = await this.db
+				.prepare(
+					`SELECT name, tbl_name, sql FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'`
+				)
+				.all();
 
-			return (result.results || []).map((row: any) => ({
-				name: row.name,
-				table: row.tbl_name,
-				columns: this.parseIndexColumns(row.sql),
-				unique: row.sql?.includes('UNIQUE') || false
-			}));
+			return (result.results || []).map(
+				(row: { name: string; tbl_name: string; sql?: string }) => ({
+					name: row.name,
+					table: row.tbl_name,
+					columns: this.parseIndexColumns(row.sql),
+					unique: row.sql?.includes('UNIQUE') || false
+				})
+			);
 		} catch (error) {
 			console.error('Failed to get existing indexes:', error);
 			return [];
@@ -310,37 +330,37 @@ export class QueryOptimizerService {
 	 */
 	private parseIndexColumns(sql: string): string[] {
 		if (!sql) return [];
-		
+
 		const match = sql.match(/\(([^)]+)\)/);
 		if (!match) return [];
-		
-		return match[1].split(',').map(col => col.trim().replace(/["`]/g, ''));
+
+		return match[1].split(',').map((col) => col.trim().replace(/["`]/g, ''));
 	}
 
 	/**
 	 * Generate index recommendations based on query analysis
 	 */
 	private generateIndexRecommendations(
-		analysis: QueryAnalysis, 
+		analysis: QueryAnalysis,
 		existingIndexes: Array<{ name: string; table: string; columns: string[] }>
 	): IndexRecommendation[] {
 		const recommendations: IndexRecommendation[] = [];
-		
+
 		// Extract table and WHERE conditions from query
 		const tableMatch = analysis.query.match(/FROM\s+(\w+)/i);
 		const table = tableMatch?.[1];
-		
+
 		if (!table) return recommendations;
 
 		// Check for WHERE clause columns that need indexing
 		const whereMatch = analysis.query.match(/WHERE\s+(\w+)\s*=/i);
 		const whereColumn = whereMatch?.[1];
-		
+
 		if (whereColumn) {
-			const hasIndex = existingIndexes.some(idx => 
-				idx.table === table && idx.columns.includes(whereColumn)
+			const hasIndex = existingIndexes.some(
+				(idx) => idx.table === table && idx.columns.includes(whereColumn)
 			);
-			
+
 			if (!hasIndex) {
 				recommendations.push({
 					table,
@@ -363,7 +383,7 @@ export class QueryOptimizerService {
 		existingIndexes: Array<{ name: string; table: string; columns: string[] }>
 	): IndexRecommendation[] {
 		const recommendations: IndexRecommendation[] = [];
-		
+
 		const criticalIndexes = [
 			{
 				table: 'clubs',
@@ -393,11 +413,11 @@ export class QueryOptimizerService {
 		];
 
 		for (const critical of criticalIndexes) {
-			const hasIndex = existingIndexes.some(idx => 
-				idx.table === critical.table && 
-				critical.columns.every(col => idx.columns.includes(col))
+			const hasIndex = existingIndexes.some(
+				(idx) =>
+					idx.table === critical.table && critical.columns.every((col) => idx.columns.includes(col))
 			);
-			
+
 			if (!hasIndex) {
 				const indexName = `idx_${critical.table}_${critical.columns.join('_')}`;
 				recommendations.push({

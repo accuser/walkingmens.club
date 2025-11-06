@@ -22,18 +22,14 @@ export const POST: RequestHandler = async ({ request, platform, cookies, getClie
 		const clientIP = getClientAddress();
 		const userAgent = request.headers.get('user-agent') || undefined;
 
-		const result = await authService.login(
-			{ username, password },
-			clientIP,
-			userAgent
-		);
+		const result = await authService.login({ username, password }, clientIP, userAgent);
 
 		if (!result.success || !result.session) {
 			return json({ error: result.error || 'Login failed' }, { status: 401 });
 		}
 
 		// Set session cookie
-		setAuthCookie({ cookies, url: new URL(request.url) } as any, result.session.id);
+		setAuthCookie({ cookies, url: new URL(request.url) }, result.session.id);
 
 		return json({
 			success: true,

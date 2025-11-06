@@ -54,7 +54,7 @@ export class AuthService {
 
 			// Create session
 			const session = await this.sessionService.createSession(user, ipAddress, userAgent);
-			
+
 			// Record successful login
 			await this.recordLoginAttempt(credentials.username, true, ipAddress);
 
@@ -103,10 +103,12 @@ export class AuthService {
 			// Create default admin user
 			const adminId = 'admin-' + Date.now();
 			await this.db
-				.prepare(`
+				.prepare(
+					`
 					INSERT INTO admin_users (id, username, password_hash, email, role, created_at)
 					VALUES (?, ?, ?, ?, ?, ?)
-				`)
+				`
+				)
 				.bind(
 					adminId,
 					AUTH_CONFIG.DEFAULT_ADMIN.username,
@@ -193,7 +195,7 @@ export class AuthService {
 		const data = encoder.encode(password + 'salt');
 		const hashBuffer = await crypto.subtle.digest('SHA-256', data);
 		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+		return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 	}
 
 	/**
@@ -206,10 +208,12 @@ export class AuthService {
 	): Promise<void> {
 		try {
 			await this.db
-				.prepare(`
+				.prepare(
+					`
 					INSERT INTO login_attempts (username, success, ip_address, attempted_at)
 					VALUES (?, ?, ?, ?)
-				`)
+				`
+				)
 				.bind(username, success ? 1 : 0, ipAddress || null, new Date().toISOString())
 				.run();
 		} catch (error) {
@@ -224,11 +228,13 @@ export class AuthService {
 		try {
 			const windowStart = new Date(Date.now() - AUTH_CONFIG.LOGIN_ATTEMPT_WINDOW);
 			const result = await this.db
-				.prepare(`
+				.prepare(
+					`
 					SELECT COUNT(*) as count 
 					FROM login_attempts 
 					WHERE username = ? AND success = 0 AND attempted_at > ?
-				`)
+				`
+				)
 				.bind(username, windowStart.toISOString())
 				.first<{ count: number }>();
 

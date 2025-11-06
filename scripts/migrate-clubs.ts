@@ -2,10 +2,10 @@
 /**
  * Club data migration script
  * Migrates static club configurations to Cloudflare D1 database
- * 
+ *
  * Usage:
  *   npm run migrate:clubs [options]
- * 
+ *
  * Options:
  *   --dry-run     Validate data without making changes
  *   --validate    Only validate data, don't migrate
@@ -13,7 +13,7 @@
  *   --backup-file Path to backup file for rollback
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 // Import club data and migration utilities
@@ -35,53 +35,53 @@ const backupFile = backupFileIndex !== -1 ? args[backupFileIndex + 1] : null;
  * In production, this would be replaced with actual Cloudflare D1 instance
  */
 class MockD1Database implements D1Database {
-	private data = new Map<string, any>();
+	private data = new Map<string, unknown>();
 
-	prepare(query: string) {
+	prepare() {
 		const mockStatement = {
-			bind: (...params: any[]) => mockStatement,
+			bind: () => mockStatement,
 			first: async () => null,
-			all: async () => ({ 
-				results: [], 
-				success: true, 
-				meta: { 
-					duration: 0, 
-					size_after: 0, 
-					rows_read: 0, 
-					rows_written: 0, 
-					last_row_id: 1, 
-					changed_db: false, 
-					changes: 0 
-				} 
+			all: async () => ({
+				results: [],
+				success: true,
+				meta: {
+					duration: 0,
+					size_after: 0,
+					rows_read: 0,
+					rows_written: 0,
+					last_row_id: 1,
+					changed_db: false,
+					changes: 0
+				}
 			}),
-			run: async () => ({ 
-				success: true, 
-				meta: { 
-					duration: 0, 
-					size_after: 0, 
-					rows_read: 0, 
-					rows_written: 0, 
-					last_row_id: 1, 
-					changed_db: false, 
-					changes: 0 
-				} 
+			run: async () => ({
+				success: true,
+				meta: {
+					duration: 0,
+					size_after: 0,
+					rows_read: 0,
+					rows_written: 0,
+					last_row_id: 1,
+					changed_db: false,
+					changes: 0
+				}
 			})
 		};
 		return mockStatement;
 	}
 
-	async batch(statements: any[]) {
-		return statements.map(() => ({ 
-			success: true, 
-			meta: { 
-				duration: 0, 
-				size_after: 0, 
-				rows_read: 0, 
-				rows_written: 0, 
-				last_row_id: 1, 
-				changed_db: false, 
-				changes: 0 
-			} 
+	async batch(statements: unknown[]) {
+		return statements.map(() => ({
+			success: true,
+			meta: {
+				duration: 0,
+				size_after: 0,
+				rows_read: 0,
+				rows_written: 0,
+				last_row_id: 1,
+				changed_db: false,
+				changes: 0
+			}
 		}));
 	}
 
@@ -89,7 +89,7 @@ class MockD1Database implements D1Database {
 		return new ArrayBuffer(0);
 	}
 
-	async exec(query: string) {
+	async exec() {
 		return { count: 0, duration: 0 };
 	}
 }
@@ -101,11 +101,11 @@ function createBackupFile(clubs: ClubConfig[], filename?: string): string {
 	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 	const backupFilename = filename || `club-backup-${timestamp}.json`;
 	const backupPath = join(process.cwd(), 'backups', backupFilename);
-	
+
 	// Ensure backups directory exists
 	const backupsDir = join(process.cwd(), 'backups');
 	if (!existsSync(backupsDir)) {
-		require('fs').mkdirSync(backupsDir, { recursive: true });
+		mkdirSync(backupsDir, { recursive: true });
 	}
 
 	writeFileSync(backupPath, JSON.stringify(clubs, null, 2));
@@ -117,7 +117,7 @@ function createBackupFile(clubs: ClubConfig[], filename?: string): string {
  */
 function loadBackupFile(filename: string): ClubConfig[] {
 	const backupPath = join(process.cwd(), 'backups', filename);
-	
+
 	if (!existsSync(backupPath)) {
 		throw new Error(`Backup file not found: ${backupPath}`);
 	}
@@ -147,7 +147,7 @@ async function runMigration() {
 
 			console.log(`📦 Loading backup from: ${backupFile}`);
 			const backupData = loadBackupFile(backupFile);
-			
+
 			console.log(`🔄 Rolling back to backup with ${backupData.length} clubs...`);
 			const result = await migrationService.rollbackMigration(backupData);
 
@@ -156,16 +156,15 @@ async function runMigration() {
 				console.log(`📊 Restored clubs: ${result.migratedClubs.join(', ')}`);
 			} else {
 				console.error('❌ Rollback failed:');
-				result.errors.forEach(error => console.error(`   - ${error}`));
+				result.errors.forEach((error) => console.error(`   - ${error}`));
 				process.exit(1);
 			}
-
 		} else {
 			// Forward migration
 			console.log('📋 Loading static club data...');
 			const staticClubs = getStaticClubs();
 			console.log(`📊 Found ${staticClubs.length} clubs to migrate:`);
-			staticClubs.forEach(club => console.log(`   - ${club.id} (${club.hostname})`));
+			staticClubs.forEach((club) => console.log(`   - ${club.id} (${club.hostname})`));
 
 			if (staticClubs.length === 0) {
 				console.log('ℹ️  No clubs found to migrate');
@@ -199,7 +198,7 @@ async function runMigration() {
 
 			if (result.success) {
 				console.log('✅ Migration completed successfully');
-				
+
 				if (result.rollbackData && !isDryRun && !isValidateOnly) {
 					const backupPath = createBackupFile(result.rollbackData);
 					console.log(`💾 Backup created: ${backupPath}`);
@@ -213,7 +212,7 @@ async function runMigration() {
 				if (!isDryRun && !isValidateOnly) {
 					console.log('\n🔍 Verifying data integrity...');
 					const integrity = await migrationService.verifyDataIntegrity(staticClubs);
-					
+
 					if (integrity.isValid) {
 						console.log('✅ Data integrity verification passed');
 					} else {
@@ -224,19 +223,17 @@ async function runMigration() {
 						if (integrity.mismatchedClubs.length > 0) {
 							console.warn(`   Mismatched clubs: ${integrity.mismatchedClubs.join(', ')}`);
 						}
-						integrity.errors.forEach(error => console.error(`   - ${error}`));
+						integrity.errors.forEach((error) => console.error(`   - ${error}`));
 					}
 				}
-
 			} else {
 				console.error('❌ Migration failed:');
-				result.errors.forEach(error => console.error(`   - ${error}`));
+				result.errors.forEach((error) => console.error(`   - ${error}`));
 				process.exit(1);
 			}
 		}
 
 		console.log('\n🎉 Migration script completed');
-
 	} catch (error) {
 		console.error('💥 Migration script failed:', error);
 		process.exit(1);
@@ -268,7 +265,7 @@ Examples:
 }
 
 // Run the migration
-runMigration().catch(error => {
+runMigration().catch((error) => {
 	console.error('💥 Unhandled error:', error);
 	process.exit(1);
 });

@@ -10,7 +10,7 @@ import { setAuthCookie, requireAuth } from '$lib/auth/middleware';
 export const load: PageServerLoad = async (event) => {
 	// Check if user is already authenticated
 	const authResult = await requireAuth(event);
-	
+
 	if (authResult.authenticated) {
 		// Redirect to admin dashboard if already logged in
 		throw redirect(302, '/admin');
@@ -41,10 +41,10 @@ export const actions: Actions = {
 
 		try {
 			const authService = new AuthService(event.platform.env.DB);
-			
+
 			// Initialize default admin if needed
 			await authService.initializeDefaultAdmin();
-			
+
 			const result = await authService.login(
 				{ username, password },
 				event.getClientAddress(),

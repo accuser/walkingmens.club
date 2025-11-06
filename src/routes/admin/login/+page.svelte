@@ -114,7 +114,9 @@ Admin login page
 	.login-card {
 		background: white;
 		border-radius: 0.75rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 20px 25px -5px rgba(0, 0, 0, 0.1),
+			0 10px 10px -5px rgba(0, 0, 0, 0.04);
 		padding: 2rem;
 		width: 100%;
 		max-width: 400px;

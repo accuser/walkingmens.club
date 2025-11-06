@@ -25,7 +25,7 @@
   - Create fallback mechanisms for when database is unavailable
   - _Requirements: 5.1, 5.3, 4.4_
 
-- [ ]* 2.4 Write unit tests for database service
+- [ ]\* 2.4 Write unit tests for database service
   - Create unit tests for CRUD operations using mock D1 database
   - Test data transformation functions and validation logic
   - Test error handling scenarios and retry mechanisms
@@ -44,7 +44,7 @@
   - Add cache-aside pattern for optimal performance
   - _Requirements: 1.5, 5.2, 4.5_
 
-- [ ]* 3.3 Write tests for caching functionality
+- [ ]\* 3.3 Write tests for caching functionality
   - Test cache hit/miss scenarios and TTL behavior
   - Test cache invalidation and consistency with database
   - Test performance improvements with caching enabled
@@ -63,7 +63,7 @@
   - Add backward compatibility layer during transition period
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ]* 4.3 Write integration tests for migration
+- [ ]\* 4.3 Write integration tests for migration
   - Test migration script accuracy and data integrity
   - Test API compatibility before and after migration
   - Test rollback procedures and error recovery
@@ -89,7 +89,7 @@
   - Add DNS configuration guidance for new subdomains
   - _Requirements: 3.1, 3.3, 3.4_
 
-- [ ]* 5.4 Write API endpoint tests
+- [ ]\* 5.4 Write API endpoint tests
   - Test all CRUD operations through API endpoints
   - Test authentication and authorization for admin routes
   - Test validation and error handling in API responses
@@ -120,7 +120,7 @@
   - Create loading states and progress indicators for async operations
   - _Requirements: 2.5_
 
-- [ ]* 6.5 Write end-to-end tests for admin interface
+- [ ]\* 6.5 Write end-to-end tests for admin interface
   - Test complete club creation and editing workflows
   - Test form validation and error handling scenarios
   - Test authentication and authorization flows
@@ -139,7 +139,7 @@
   - Add monitoring and alerting for system health
   - _Requirements: 3.5, 4.4, 5.4, 5.5_
 
-- [ ]* 7.3 Write tests for subdomain routing
+- [ ]\* 7.3 Write tests for subdomain routing
   - Test subdomain routing with database-stored configurations
   - Test error handling for unconfigured and invalid subdomains
   - Test fallback mechanisms during database outages
@@ -158,7 +158,7 @@
   - Add database health monitoring and alerting
   - _Requirements: 5.4_
 
-- [ ]* 8.3 Write performance and load tests
+- [ ]\* 8.3 Write performance and load tests
   - Test system performance under expected load conditions
   - Test cache effectiveness and database query performance
   - Test backup and recovery procedures

@@ -2,9 +2,13 @@
 Loading overlay component
 -->
 <script lang="ts">
-	export let show = false;
-	export let message = 'Loading...';
-	export let backdrop = true;
+	interface Props {
+		show?: boolean;
+		message?: string;
+		backdrop?: boolean;
+	}
+
+	let { show = false, message = 'Loading...', backdrop = true }: Props = $props();
 </script>
 
 {#if show}
@@ -42,7 +46,9 @@ Loading overlay component
 		padding: 2rem;
 		background: white;
 		border-radius: 0.75rem;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
 		border: 1px solid #e5e7eb;
 	}
 

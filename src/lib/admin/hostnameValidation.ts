@@ -182,10 +182,10 @@ export class HostnameValidationService {
 			// In a real implementation, this would check DNS records
 			// For now, we'll simulate the check
 			const fullDomain = `${hostname}.walkingmens.club`;
-			
+
 			// Simulate DNS lookup (in production, use DNS resolution)
 			const configured = await this.simulateDNSCheck(fullDomain);
-			
+
 			return {
 				hostname: fullDomain,
 				configured,
@@ -209,7 +209,7 @@ export class HostnameValidationService {
 	 */
 	generateDNSConfigurationGuide(hostname: string): DNSConfigurationGuide {
 		const fullDomain = `${hostname}.walkingmens.club`;
-		
+
 		return {
 			hostname: fullDomain,
 			recordType: 'CNAME',
@@ -242,7 +242,7 @@ export class HostnameValidationService {
 			}
 
 			const statuses: SubdomainStatus[] = [];
-			
+
 			for (const club of clubs.results) {
 				const status = await this.checkSubdomainStatus(club.hostname);
 				statuses.push(status);
@@ -261,7 +261,7 @@ export class HostnameValidationService {
 	private async simulateDNSCheck(domain: string): Promise<boolean> {
 		// In production, this would use DNS resolution
 		// For demo purposes, we'll simulate based on some criteria
-		
+
 		// Simulate that some domains are configured
 		const configuredDomains = ['delabole.walkingmens.club', 'test.walkingmens.club'];
 		return configuredDomains.includes(domain);

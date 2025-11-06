@@ -7,14 +7,14 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getServiceHealthStatus } from '$lib/clubs';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async () => {
 	try {
 		const healthStatus = await getServiceHealthStatus();
-		
+
 		// Determine overall system status
 		const isHealthy = healthStatus.database || healthStatus.fallback;
 		const status = isHealthy ? 'healthy' : 'unhealthy';
-		
+
 		// Include detailed metrics
 		const response = {
 			status,
@@ -41,35 +41,37 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		// Return appropriate HTTP status
 		const httpStatus = isHealthy ? 200 : 503;
-		
-		return json(response, { 
+
+		return json(response, {
 			status: httpStatus,
 			headers: {
 				'Cache-Control': 'no-cache, no-store, must-revalidate',
-				'Pragma': 'no-cache',
-				'Expires': '0'
+				Pragma: 'no-cache',
+				Expires: '0'
 			}
 		});
-		
 	} catch (error) {
 		console.error('Health check endpoint error:', error);
-		
-		return json({
-			status: 'error',
-			timestamp: new Date().toISOString(),
-			error: 'Failed to retrieve system health status',
-			services: {
-				database: { available: false, status: 'unknown' },
-				fallback: { available: false, status: 'unknown' },
-				cache: { enabled: false, size: 0, hitRate: 0, hits: 0, misses: 0 }
+
+		return json(
+			{
+				status: 'error',
+				timestamp: new Date().toISOString(),
+				error: 'Failed to retrieve system health status',
+				services: {
+					database: { available: false, status: 'unknown' },
+					fallback: { available: false, status: 'unknown' },
+					cache: { enabled: false, size: 0, hitRate: 0, hits: 0, misses: 0 }
+				}
+			},
+			{
+				status: 503,
+				headers: {
+					'Cache-Control': 'no-cache, no-store, must-revalidate',
+					Pragma: 'no-cache',
+					Expires: '0'
+				}
 			}
-		}, { 
-			status: 503,
-			headers: {
-				'Cache-Control': 'no-cache, no-store, must-revalidate',
-				'Pragma': 'no-cache',
-				'Expires': '0'
-			}
-		});
+		);
 	}
 };

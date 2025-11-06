@@ -17,7 +17,7 @@ describe('ClubSuggestions.svelte', () => {
 	it('should display club cards', async () => {
 		render(ClubSuggestions, { clubs: mockClubs });
 
-		const clubName = page.getByText('Delabole Walking Men\'s Club');
+		const clubName = page.getByText("Delabole Walking Men's Club");
 		await expect.element(clubName).toBeInTheDocument();
 	});
 

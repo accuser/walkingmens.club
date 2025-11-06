@@ -1,14 +1,14 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(tree:*)",
-      "Bash(pnpm add:*)",
-      "Bash(pnpm test:*)",
-      "Bash(pnpm exec playwright install:*)",
-      "Bash(pnpm check:*)",
-      "Bash(pnpm dev:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
+	"permissions": {
+		"allow": [
+			"Bash(tree:*)",
+			"Bash(pnpm add:*)",
+			"Bash(pnpm test:*)",
+			"Bash(pnpm exec playwright install:*)",
+			"Bash(pnpm check:*)",
+			"Bash(pnpm dev:*)"
+		],
+		"deny": [],
+		"ask": []
+	}
 }

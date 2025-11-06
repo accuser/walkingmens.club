@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
-	
+
 	let performanceData = $state(null);
 	let indexRecommendations = $state([]);
 	let loading = $state(true);
@@ -9,12 +8,12 @@
 	let refreshInterval = $state(30000); // 30 seconds
 	let autoRefresh = $state(true);
 	let intervalId = null;
-	
+
 	// Query analysis
 	let queryToAnalyze = $state('');
 	let queryAnalysis = $state(null);
 	let analyzingQuery = $state(false);
-	
+
 	// Index management
 	let creatingIndexes = $state(false);
 	let selectedRecommendations = $state([]);
@@ -25,7 +24,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				performanceData = result.data;
@@ -47,7 +46,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				indexRecommendations = result.data.recommendations;
@@ -59,7 +58,7 @@
 
 	async function analyzeQuery() {
 		if (!queryToAnalyze.trim()) return;
-		
+
 		analyzingQuery = true;
 		try {
 			const response = await fetch('/api/admin/performance/analyze', {
@@ -69,11 +68,11 @@
 				},
 				body: JSON.stringify({ query: queryToAnalyze })
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				queryAnalysis = result.data;
@@ -93,7 +92,7 @@
 			alert('Please select at least one index to create');
 			return;
 		}
-		
+
 		creatingIndexes = true;
 		try {
 			const response = await fetch('/api/admin/performance/indexes/create', {
@@ -101,15 +100,15 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ 
-					recommendations: selectedRecommendations.map(i => indexRecommendations[i])
+				body: JSON.stringify({
+					recommendations: selectedRecommendations.map((i) => indexRecommendations[i])
 				})
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				alert(`Successfully created ${result.data.created.length} indexes`);
@@ -133,16 +132,16 @@
 		if (!confirm('Are you sure you want to clear all performance metrics?')) {
 			return;
 		}
-		
+
 		try {
 			const response = await fetch('/api/admin/performance/clear', {
 				method: 'POST'
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			await fetchPerformanceData();
 		} catch (err) {
 			console.error('Failed to clear metrics:', err);
@@ -156,7 +155,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const blob = await response.blob();
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
@@ -191,21 +190,25 @@
 
 	function getPriorityClass(priority) {
 		switch (priority) {
-			case 'high': return 'priority-high';
-			case 'medium': return 'priority-medium';
-			case 'low': return 'priority-low';
-			default: return '';
+			case 'high':
+				return 'priority-high';
+			case 'medium':
+				return 'priority-medium';
+			case 'low':
+				return 'priority-low';
+			default:
+				return '';
 		}
 	}
 
 	onMount(() => {
 		fetchPerformanceData();
 		fetchIndexRecommendations();
-		
+
 		if (autoRefresh) {
 			intervalId = setInterval(fetchPerformanceData, refreshInterval);
 		}
-		
+
 		return () => {
 			if (intervalId) {
 				clearInterval(intervalId);
@@ -217,7 +220,7 @@
 		if (intervalId) {
 			clearInterval(intervalId);
 		}
-		
+
 		if (autoRefresh && refreshInterval > 0) {
 			intervalId = setInterval(fetchPerformanceData, refreshInterval);
 		}
@@ -242,15 +245,9 @@
 				<option value={60000}>1m</option>
 				<option value={300000}>5m</option>
 			</select>
-			<button onclick={fetchPerformanceData} class="btn-secondary">
-				Refresh Now
-			</button>
-			<button onclick={exportMetrics} class="btn-secondary">
-				Export Data
-			</button>
-			<button onclick={clearMetrics} class="btn-danger">
-				Clear Metrics
-			</button>
+			<button onclick={fetchPerformanceData} class="btn-secondary"> Refresh Now </button>
+			<button onclick={exportMetrics} class="btn-secondary"> Export Data </button>
+			<button onclick={clearMetrics} class="btn-danger"> Clear Metrics </button>
 		</div>
 	</div>
 
@@ -270,7 +267,7 @@
 			<div class="alerts-section">
 				<h2>Performance Alerts</h2>
 				<div class="alerts-grid">
-					{#each performanceData.alerts as alert}
+					{#each performanceData.alerts as alert, index (index)}
 						<div class="alert-card {getAlertClass(alert.type)}">
 							<div class="alert-header">
 								<span class="alert-type">{alert.type.toUpperCase()}</span>
@@ -299,7 +296,9 @@
 							<div class="stat-label">Total Queries</div>
 						</div>
 						<div class="stat-card">
-							<div class="stat-value">{formatDuration(performanceData.stats.database.avgQueryTime)}</div>
+							<div class="stat-value">
+								{formatDuration(performanceData.stats.database.avgQueryTime)}
+							</div>
 							<div class="stat-label">Avg Query Time</div>
 						</div>
 						<div class="stat-card">
@@ -326,7 +325,9 @@
 							<div class="stat-label">Total Operations</div>
 						</div>
 						<div class="stat-card">
-							<div class="stat-value">{formatDuration(performanceData.stats.cache.avgResponseTime)}</div>
+							<div class="stat-value">
+								{formatDuration(performanceData.stats.cache.avgResponseTime)}
+							</div>
 							<div class="stat-label">Avg Response Time</div>
 						</div>
 						<div class="stat-card">
@@ -341,7 +342,9 @@
 					<h3>System Performance</h3>
 					<div class="stat-cards">
 						<div class="stat-card">
-							<div class="stat-value">{Math.floor(performanceData.stats.system.uptime / 3600)}h</div>
+							<div class="stat-value">
+								{Math.floor(performanceData.stats.system.uptime / 3600)}h
+							</div>
 							<div class="stat-label">Uptime</div>
 						</div>
 						<div class="stat-card">
@@ -349,7 +352,9 @@
 							<div class="stat-label">Total Requests</div>
 						</div>
 						<div class="stat-card">
-							<div class="stat-value">{formatDuration(performanceData.stats.system.avgResponseTime)}</div>
+							<div class="stat-value">
+								{formatDuration(performanceData.stats.system.avgResponseTime)}
+							</div>
 							<div class="stat-label">Avg Response Time</div>
 						</div>
 						<div class="stat-card">
@@ -376,7 +381,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each performanceData.slowQueries as query}
+							{#each performanceData.slowQueries as query, index (index)}
 								<tr>
 									<td>{query.query}</td>
 									<td>{formatDuration(query.duration)}</td>
@@ -395,7 +400,7 @@
 			<div class="recommendations-section">
 				<h2>Optimization Recommendations</h2>
 				<div class="recommendations-list">
-					{#each performanceData.recommendations as rec}
+					{#each performanceData.recommendations as rec, index (index)}
 						<div class="recommendation-card {getPriorityClass(rec.priority)}">
 							<div class="rec-header">
 								<span class="rec-category">{rec.category}</span>
@@ -415,12 +420,9 @@
 		<h2>Query Analysis Tool</h2>
 		<div class="query-analyzer">
 			<div class="query-input">
-				<textarea 
-					bind:value={queryToAnalyze}
-					placeholder="Enter SQL query to analyze..."
-					rows="4"
+				<textarea bind:value={queryToAnalyze} placeholder="Enter SQL query to analyze..." rows="4"
 				></textarea>
-				<button 
+				<button
 					onclick={analyzeQuery}
 					disabled={analyzingQuery || !queryToAnalyze.trim()}
 					class="btn-primary"
@@ -428,7 +430,7 @@
 					{analyzingQuery ? 'Analyzing...' : 'Analyze Query'}
 				</button>
 			</div>
-			
+
 			{#if queryAnalysis}
 				<div class="analysis-results">
 					<h3>Analysis Results</h3>
@@ -446,7 +448,7 @@
 							<h4>Optimization</h4>
 							<p>Estimated Speedup: {queryAnalysis.optimization.estimatedSpeedup}x</p>
 							<div class="improvements">
-								{#each queryAnalysis.optimization.improvements as improvement}
+								{#each queryAnalysis.optimization.improvements as improvement, index (index)}
 									<div class="improvement">{improvement}</div>
 								{/each}
 							</div>
@@ -468,7 +470,7 @@
 		<div class="index-recommendations-section">
 			<h2>Index Recommendations</h2>
 			<div class="index-actions">
-				<button 
+				<button
 					onclick={createSelectedIndexes}
 					disabled={creatingIndexes || selectedRecommendations.length === 0}
 					class="btn-primary"
@@ -477,14 +479,10 @@
 				</button>
 			</div>
 			<div class="index-recommendations">
-				{#each indexRecommendations as rec, i}
+				{#each indexRecommendations as rec, i (i)}
 					<div class="index-rec-card">
 						<label class="index-checkbox">
-							<input 
-								type="checkbox" 
-								bind:group={selectedRecommendations}
-								value={i}
-							/>
+							<input type="checkbox" bind:group={selectedRecommendations} value={i} />
 							<div class="index-details">
 								<div class="index-header">
 									<span class="index-table">{rec.table}</span>
@@ -541,7 +539,9 @@
 		font-size: 0.875rem;
 	}
 
-	.btn-primary, .btn-secondary, .btn-danger {
+	.btn-primary,
+	.btn-secondary,
+	.btn-danger {
 		padding: 0.5rem 1rem;
 		border: none;
 		border-radius: 6px;
@@ -579,12 +579,14 @@
 		background: #b91c1c;
 	}
 
-	.btn-primary:disabled, .btn-secondary:disabled {
+	.btn-primary:disabled,
+	.btn-secondary:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
 
-	.loading-state, .error-state {
+	.loading-state,
+	.error-state {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -604,18 +606,28 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
-	.alerts-section, .stats-section, .slow-queries-section, 
-	.recommendations-section, .query-analysis-section, 
+	.alerts-section,
+	.stats-section,
+	.slow-queries-section,
+	.recommendations-section,
+	.query-analysis-section,
 	.index-recommendations-section {
 		margin-bottom: 3rem;
 	}
 
-	.alerts-section h2, .stats-section h2, .slow-queries-section h2,
-	.recommendations-section h2, .query-analysis-section h2,
+	.alerts-section h2,
+	.stats-section h2,
+	.slow-queries-section h2,
+	.recommendations-section h2,
+	.query-analysis-section h2,
 	.index-recommendations-section h2 {
 		margin: 0 0 1.5rem 0;
 		font-size: 1.5rem;

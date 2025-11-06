@@ -5,9 +5,13 @@
 
 import type { ClubConfig } from '../clubs/types';
 import { D1ClubDatabaseService, type ClubDatabaseService } from './clubDatabase';
-import { DatabaseConnectionManager, DatabaseUnavailableError, DatabaseConnectionError } from './connectionManager';
+import { DatabaseConnectionManager, DatabaseUnavailableError } from './connectionManager';
 import { getDatabase } from '../config/database';
-import { CachedClubService, type CachedServiceConfig, DEFAULT_CACHED_SERVICE_CONFIG } from '../services/cachedClubService';
+import {
+	CachedClubService,
+	type CachedServiceConfig,
+	DEFAULT_CACHED_SERVICE_CONFIG
+} from '../services/cachedClubService';
 import { createCacheService } from '../services/clubCache';
 
 /**
@@ -60,23 +64,23 @@ export class ResilientClubService implements ClubDatabaseService {
 			if (this.platform) {
 				const db = getDatabase(this.platform);
 				this.databaseService = new D1ClubDatabaseService(db);
-				
+
 				// Wrap database service with caching layer
 				const cacheService = createCacheService(this.platform, {
 					enabled: this.config.cacheConfig.enableCaching,
 					defaultTtlMs: this.config.cacheConfig.cacheTtlMs
 				});
-				
+
 				this.cachedService = new CachedClubService(
 					this.databaseService,
 					cacheService,
 					this.config.cacheConfig,
 					this.platform
 				);
-				
+
 				// Initialize cached service (warm cache if configured)
 				await this.cachedService.initialize();
-				
+
 				this.isInitialized = true;
 			} else {
 				console.warn('Platform not available, running in fallback mode');
@@ -113,13 +117,13 @@ export class ResilientClubService implements ClubDatabaseService {
 			} catch (error) {
 				console.error('Database operation failed, using fallback:', error);
 				const fallbackResult = this.fallbackProvider?.getClubByHostname(hostname) || null;
-				
+
 				if (fallbackResult) {
 					console.warn(`Club found via fallback: ${hostname} -> ${fallbackResult.name}`);
 				} else {
 					console.warn(`Club not found in database or fallback: ${hostname}`);
 				}
-				
+
 				return fallbackResult;
 			}
 		}
@@ -131,7 +135,7 @@ export class ResilientClubService implements ClubDatabaseService {
 		} else {
 			console.log(`Club not found in fallback: ${hostname}`);
 		}
-		
+
 		return fallbackResult;
 	}
 
@@ -329,13 +333,15 @@ export class ResilientClubService implements ClubDatabaseService {
 	 * Get cache statistics
 	 */
 	getCacheStats() {
-		return this.cachedService?.getCacheStats() || {
-			size: 0,
-			hits: 0,
-			misses: 0,
-			hitRate: 0,
-			enabled: false
-		};
+		return (
+			this.cachedService?.getCacheStats() || {
+				size: 0,
+				hits: 0,
+				misses: 0,
+				hitRate: 0,
+				enabled: false
+			}
+		);
 	}
 
 	/**
@@ -381,11 +387,11 @@ export class ResilientClubService implements ClubDatabaseService {
 	 */
 	async shutdown(): Promise<void> {
 		await this.connectionManager.shutdown();
-		
+
 		if (this.cachedService) {
 			await this.cachedService.shutdown();
 		}
-		
+
 		this.isInitialized = false;
 	}
 }

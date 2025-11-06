@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	
+
 	let { refreshInterval = 30000 } = $props(); // 30 seconds default
-	
+
 	let systemMetrics = $state({
 		uptime: 0,
 		requestCount: 0,
@@ -10,16 +10,15 @@
 		avgResponseTime: 0,
 		activeConnections: 0
 	});
-	
+
 	let alerts = $state([]);
 	let loading = $state(true);
 	let error = $state(null);
-	
+
 	// Simulated metrics (in production, these would come from real monitoring)
 	function generateMetrics() {
 		const now = Date.now();
-		const baseTime = now - (now % 1000); // Round to nearest second
-		
+
 		return {
 			uptime: Math.floor((now - (now % (24 * 60 * 60 * 1000))) / 1000), // Simulated uptime
 			requestCount: Math.floor(Math.random() * 1000) + 500,
@@ -28,18 +27,30 @@
 			activeConnections: Math.floor(Math.random() * 50) + 10
 		};
 	}
-	
+
 	function generateAlerts() {
 		const alertTypes = [
-			{ level: 'info', message: 'System backup completed successfully', timestamp: new Date(Date.now() - 60000) },
-			{ level: 'warning', message: 'High response time detected on subdomain routing', timestamp: new Date(Date.now() - 300000) },
-			{ level: 'success', message: 'Database connection pool optimized', timestamp: new Date(Date.now() - 600000) }
+			{
+				level: 'info',
+				message: 'System backup completed successfully',
+				timestamp: new Date(Date.now() - 60000)
+			},
+			{
+				level: 'warning',
+				message: 'High response time detected on subdomain routing',
+				timestamp: new Date(Date.now() - 300000)
+			},
+			{
+				level: 'success',
+				message: 'Database connection pool optimized',
+				timestamp: new Date(Date.now() - 600000)
+			}
 		];
-		
+
 		// Randomly show some alerts
 		return alertTypes.filter(() => Math.random() > 0.7);
 	}
-	
+
 	async function fetchMetrics() {
 		try {
 			// In production, this would fetch real metrics from monitoring APIs
@@ -53,12 +64,12 @@
 			loading = false;
 		}
 	}
-	
+
 	function formatUptime(seconds) {
 		const days = Math.floor(seconds / (24 * 60 * 60));
 		const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
 		const minutes = Math.floor((seconds % (60 * 60)) / 60);
-		
+
 		if (days > 0) {
 			return `${days}d ${hours}h ${minutes}m`;
 		} else if (hours > 0) {
@@ -67,36 +78,46 @@
 			return `${minutes}m`;
 		}
 	}
-	
+
 	function formatNumber(num) {
 		return new Intl.NumberFormat().format(Math.floor(num));
 	}
-	
+
 	function getAlertIcon(level) {
 		switch (level) {
-			case 'error': return '🚨';
-			case 'warning': return '⚠️';
-			case 'info': return 'ℹ️';
-			case 'success': return '✅';
-			default: return '📋';
+			case 'error':
+				return '🚨';
+			case 'warning':
+				return '⚠️';
+			case 'info':
+				return 'ℹ️';
+			case 'success':
+				return '✅';
+			default:
+				return '📋';
 		}
 	}
-	
+
 	function getAlertClass(level) {
 		switch (level) {
-			case 'error': return 'alert-error';
-			case 'warning': return 'alert-warning';
-			case 'info': return 'alert-info';
-			case 'success': return 'alert-success';
-			default: return 'alert-info';
+			case 'error':
+				return 'alert-error';
+			case 'warning':
+				return 'alert-warning';
+			case 'info':
+				return 'alert-info';
+			case 'success':
+				return 'alert-success';
+			default:
+				return 'alert-info';
 		}
 	}
-	
+
 	onMount(() => {
 		fetchMetrics();
-		
+
 		const interval = setInterval(fetchMetrics, refreshInterval);
-		
+
 		return () => clearInterval(interval);
 	});
 </script>
@@ -169,7 +190,7 @@
 			<div class="alerts-section">
 				<h4>Recent Alerts</h4>
 				<div class="alerts-list">
-					{#each alerts as alert}
+					{#each alerts as alert (alert.timestamp)}
 						<div class="alert-item {getAlertClass(alert.level)}">
 							<span class="alert-icon">{getAlertIcon(alert.level)}</span>
 							<div class="alert-content">
@@ -234,8 +255,13 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.5; }
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
 	}
 
 	.loading-state,
@@ -259,8 +285,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	.retry-btn {
