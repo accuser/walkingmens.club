@@ -35,7 +35,9 @@
 			<ClubSuggestions {clubs} />
 
 			<footer class="mt-16 text-center text-sm text-slate-500">
-				<p>Open to all • No booking required • No experience needed • Just turn up and walk with us</p>
+				<p>
+					Open to all • No booking required • No experience needed • Just turn up and walk with us
+				</p>
 			</footer>
 		{:else if club}
 			<!-- Individual Club Page -->
@@ -195,12 +197,7 @@
 						href="/poster"
 						class="inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-blue-600"
 					>
-						<svg
-							class="h-4 w-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"

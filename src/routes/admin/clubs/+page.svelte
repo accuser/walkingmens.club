@@ -36,7 +36,7 @@ Admin clubs list and management page
 
 	// Search and filter functionality
 	$: {
-		filteredClubs = clubs.filter(club => {
+		filteredClubs = clubs.filter((club) => {
 			const searchLower = searchTerm.toLowerCase();
 			return (
 				club.name.toLowerCase().includes(searchLower) ||
@@ -82,7 +82,7 @@ Admin clubs list and management page
 		// Update pagination
 		totalPages = Math.ceil(filteredClubs.length / itemsPerPage);
 		currentPage = Math.min(currentPage, totalPages || 1);
-		
+
 		const startIndex = (currentPage - 1) * itemsPerPage;
 		const endIndex = startIndex + itemsPerPage;
 		paginatedClubs = filteredClubs.slice(startIndex, endIndex);
@@ -111,11 +111,11 @@ Admin clubs list and management page
 			}
 
 			// Remove club from local state
-			clubs = clubs.filter(c => c.id !== clubToDelete.id);
-			
+			clubs = clubs.filter((c) => c.id !== clubToDelete.id);
+
 			// Show success toast
 			showSuccessToast(`Club "${clubToDelete.name}" deleted successfully`);
-			
+
 			// Close dialog
 			showDeleteDialog = false;
 			clubToDelete = null;
@@ -215,7 +215,7 @@ Admin clubs list and management page
 					/>
 					<span class="search-icon">🔍</span>
 				</div>
-				
+
 				<div class="sort-controls">
 					<label for="sort-select" class="sort-label">Sort by:</label>
 					<select id="sort-select" class="sort-select" bind:value={sortBy}>
@@ -290,9 +290,9 @@ Admin clubs list and management page
 								</td>
 								<td class="club-location">{club.location}</td>
 								<td class="club-hostname">
-									<a 
-										href="https://{club.hostname}" 
-										target="_blank" 
+									<a
+										href="https://{club.hostname}"
+										target="_blank"
 										rel="noopener noreferrer"
 										class="hostname-link"
 									>
@@ -304,16 +304,16 @@ Admin clubs list and management page
 								</td>
 								<td class="club-actions">
 									<div class="action-buttons">
-										<a 
-											href="/admin/clubs/{club.id}/edit" 
+										<a
+											href="/admin/clubs/{club.id}/edit"
 											class="btn btn-sm btn-secondary"
 											title="Edit club"
 										>
 											✏️ Edit
 										</a>
-										<a 
-											href="https://{club.hostname}" 
-											target="_blank" 
+										<a
+											href="https://{club.hostname}"
+											target="_blank"
 											rel="noopener noreferrer"
 											class="btn btn-sm btn-outline"
 											title="View club website"
@@ -346,7 +346,7 @@ Admin clubs list and management page
 					>
 						Previous
 					</button>
-					
+
 					<div class="pagination-pages">
 						{#each Array(totalPages) as _, i}
 							{@const page = i + 1}
@@ -359,7 +359,7 @@ Admin clubs list and management page
 							</button>
 						{/each}
 					</div>
-					
+
 					<button
 						class="pagination-btn"
 						disabled={currentPage === totalPages}
@@ -382,9 +382,7 @@ Admin clubs list and management page
 					{:else}
 						<h3>No clubs yet</h3>
 						<p>Get started by creating your first walking club configuration.</p>
-						<a href="/admin/clubs/new" class="btn btn-primary">
-							Add Your First Club
-						</a>
+						<a href="/admin/clubs/new" class="btn btn-primary"> Add Your First Club </a>
 					{/if}
 				</div>
 			</div>
@@ -396,7 +394,9 @@ Admin clubs list and management page
 <ConfirmDialog
 	bind:show={showDeleteDialog}
 	title="Delete Club"
-	message={clubToDelete ? `Are you sure you want to delete "${clubToDelete.name}"? This action cannot be undone and will remove all club data including routes and meeting information.` : ''}
+	message={clubToDelete
+		? `Are you sure you want to delete "${clubToDelete.name}"? This action cannot be undone and will remove all club data including routes and meeting information.`
+		: ''}
 	confirmText="Delete Club"
 	cancelText="Cancel"
 	confirmVariant="danger"
@@ -406,18 +406,10 @@ Admin clubs list and management page
 />
 
 <!-- Toast Notifications -->
-<Toast
-	bind:show={showToast}
-	message={toastMessage}
-	type={toastType}
-	on:close={closeToast}
-/>
+<Toast bind:show={showToast} message={toastMessage} type={toastType} on:close={closeToast} />
 
 <!-- Loading Overlay -->
-<LoadingOverlay
-	show={loading && !deleteLoading}
-	message="Loading clubs..."
-/>
+<LoadingOverlay show={loading && !deleteLoading} message="Loading clubs..." />
 
 <style>
 	.clubs-page {

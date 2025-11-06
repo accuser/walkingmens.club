@@ -1,15 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	
+
 	let { data } = $props();
-	
+
 	// Get error details from the page store
-	$: error = $page.error;
-	$: status = $page.status;
-	
+	let {
+		error,
+		status,
+		url: { hostname }
+	} = $derived($page);
+
 	// Determine if this is a subdomain-related error
-	$: isSubdomainError = status === 404 && $page.url.hostname !== 'walkingmens.club' && $page.url.hostname !== 'localhost';
-	$: isServiceUnavailable = status === 503;
+	let isSubdomainError = $derived(
+		status === 404 &&
+			$page.url.hostname !== 'walkingmens.club' &&
+			$page.url.hostname !== 'localhost'
+	);
+	let isServiceUnavailable = $derived(status === 503);
 </script>
 
 <svelte:head>
@@ -19,35 +26,28 @@
 <div class="error-container">
 	<div class="error-content">
 		<h1 class="error-code">{status}</h1>
-		
+
 		{#if isServiceUnavailable}
 			<h2 class="error-title">Service Temporarily Unavailable</h2>
 			<p class="error-message">
-				We're experiencing technical difficulties. Our team has been notified and is working to resolve the issue.
+				We're experiencing technical difficulties. Our team has been notified and is working to
+				resolve the issue.
 			</p>
 			<div class="error-actions">
-				<button onclick="window.location.reload()" class="retry-button">
-					Try Again
-				</button>
-				<a href="https://walkingmens.club" class="home-link">
-					Go to Main Site
-				</a>
+				<button onclick={() => window.location.reload()} class="retry-button"> Try Again </button>
+				<a href="https://walkingmens.club" class="home-link"> Go to Main Site </a>
 			</div>
 		{:else if isSubdomainError}
 			<h2 class="error-title">Club Not Found</h2>
 			<p class="error-message">
 				{error?.message || `No walking club is configured for ${$page.url.hostname}`}
 			</p>
-			{#if error?.details}
+			{#if error && 'details' in error}
 				<p class="error-details">{error.details}</p>
 			{/if}
 			<div class="error-actions">
-				<a href="https://walkingmens.club" class="home-link">
-					Browse All Clubs
-				</a>
-				<a href="https://walkingmens.club/admin" class="admin-link">
-					Admin Portal
-				</a>
+				<a href="https://walkingmens.club" class="home-link"> Browse All Clubs </a>
+				<a href="https://walkingmens.club/admin" class="admin-link"> Admin Portal </a>
 			</div>
 			<div class="help-section">
 				<h3>Looking to set up a new club?</h3>
@@ -56,7 +56,7 @@
 					the club administrator may need to complete the setup process.
 				</p>
 				<p>
-					<strong>Club administrators:</strong> Please log in to the 
+					<strong>Club administrators:</strong> Please log in to the
 					<a href="https://walkingmens.club/admin">admin portal</a> to configure this subdomain.
 				</p>
 			</div>
@@ -73,16 +73,12 @@
 			<p class="error-message">
 				{error?.message || 'An unexpected error occurred'}
 			</p>
-			{#if error?.details}
+			{#if error && 'details' in error}
 				<p class="error-details">{error.details}</p>
 			{/if}
 			<div class="error-actions">
-				<button onclick="history.back()" class="back-button">
-					Go Back
-				</button>
-				<a href="/" class="home-link">
-					Home
-				</a>
+				<button onclick={() => history.back()} class="back-button"> Go Back </button>
+				<a href="/" class="home-link"> Home </a>
 			</div>
 		{/if}
 	</div>

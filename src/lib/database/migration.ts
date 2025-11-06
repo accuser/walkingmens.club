@@ -66,7 +66,7 @@ export class ClubMigrationService {
 			// Dry run - just validate without making changes
 			if (options.dryRun || options.validateOnly) {
 				result.success = true;
-				result.migratedClubs = staticClubs.map(club => club.id);
+				result.migratedClubs = staticClubs.map((club) => club.id);
 				return result;
 			}
 
@@ -75,7 +75,7 @@ export class ClubMigrationService {
 				try {
 					// Check if club already exists
 					const existingClub = await this.dbService.getClubByHostname(club.hostname);
-					
+
 					if (existingClub) {
 						// Update existing club
 						await this.dbService.updateClub(existingClub.id, club);
@@ -96,7 +96,6 @@ export class ClubMigrationService {
 
 			result.success = result.errors.length === 0;
 			return result;
-
 		} catch (error) {
 			const errorMessage = `Migration failed: ${
 				error instanceof Error ? error.message : 'Unknown error'
@@ -119,15 +118,17 @@ export class ClubMigrationService {
 		}
 
 		// Check for duplicate IDs
-		const ids = clubs.map(club => club.id);
+		const ids = clubs.map((club) => club.id);
 		const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
 		if (duplicateIds.length > 0) {
 			errors.push(`Duplicate club IDs found: ${duplicateIds.join(', ')}`);
 		}
 
 		// Check for duplicate hostnames
-		const hostnames = clubs.map(club => club.hostname);
-		const duplicateHostnames = hostnames.filter((hostname, index) => hostnames.indexOf(hostname) !== index);
+		const hostnames = clubs.map((club) => club.hostname);
+		const duplicateHostnames = hostnames.filter(
+			(hostname, index) => hostnames.indexOf(hostname) !== index
+		);
 		if (duplicateHostnames.length > 0) {
 			errors.push(`Duplicate hostnames found: ${duplicateHostnames.join(', ')}`);
 		}
@@ -142,7 +143,9 @@ export class ClubMigrationService {
 				if (error instanceof ValidationError) {
 					errors.push(`Club ${club.id}: ${error.message}`);
 				} else {
-					errors.push(`Club ${club.id}: Validation failed - ${error instanceof Error ? error.message : 'Unknown error'}`);
+					errors.push(
+						`Club ${club.id}: Validation failed - ${error instanceof Error ? error.message : 'Unknown error'}`
+					);
 				}
 			}
 		}
@@ -159,7 +162,9 @@ export class ClubMigrationService {
 					}
 				}
 			} catch (error) {
-				errors.push(`Failed to validate hostname ${club.hostname}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+				errors.push(
+					`Failed to validate hostname ${club.hostname}: ${error instanceof Error ? error.message : 'Unknown error'}`
+				);
 			}
 		}
 
@@ -174,7 +179,9 @@ export class ClubMigrationService {
 			return await this.dbService.getAllClubs();
 		} catch (error) {
 			console.error('Failed to create backup:', error);
-			throw new Error(`Backup creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Backup creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -208,7 +215,6 @@ export class ClubMigrationService {
 
 			result.success = result.errors.length === 0;
 			return result;
-
 		} catch (error) {
 			const errorMessage = `Rollback failed: ${
 				error instanceof Error ? error.message : 'Unknown error'
@@ -226,13 +232,15 @@ export class ClubMigrationService {
 		try {
 			// Get all club IDs
 			const clubs = await this.dbService.getAllClubs();
-			
+
 			// Delete each club (cascade will handle related records)
 			for (const club of clubs) {
 				await this.dbService.deleteClub(club.id);
 			}
 		} catch (error) {
-			throw new Error(`Failed to clear clubs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw new Error(
+				`Failed to clear clubs: ${error instanceof Error ? error.message : 'Unknown error'}`
+			);
 		}
 	}
 
@@ -248,7 +256,7 @@ export class ClubMigrationService {
 			const clubs = await this.dbService.getAllClubs();
 			return {
 				databaseClubCount: clubs.length,
-				databaseClubs: clubs.map(club => club.id),
+				databaseClubs: clubs.map((club) => club.id),
 				hasData: clubs.length > 0
 			};
 		} catch (error) {
@@ -279,12 +287,12 @@ export class ClubMigrationService {
 
 		try {
 			const migratedClubs = await this.dbService.getAllClubs();
-			const migratedClubsMap = new Map(migratedClubs.map(club => [club.id, club]));
+			const migratedClubsMap = new Map(migratedClubs.map((club) => [club.id, club]));
 
 			// Check for missing clubs
 			for (const originalClub of originalClubs) {
 				const migratedClub = migratedClubsMap.get(originalClub.id);
-				
+
 				if (!migratedClub) {
 					result.missingClubs.push(originalClub.id);
 					result.isValid = false;
@@ -297,7 +305,6 @@ export class ClubMigrationService {
 					result.isValid = false;
 				}
 			}
-
 		} catch (error) {
 			const errorMessage = `Data integrity verification failed: ${
 				error instanceof Error ? error.message : 'Unknown error'
@@ -321,8 +328,10 @@ export class ClubMigrationService {
 			original.location === migrated.location &&
 			original.meetingPoint.name === migrated.meetingPoint.name &&
 			original.meetingPoint.postcode === migrated.meetingPoint.postcode &&
-			Math.abs(original.meetingPoint.coordinates.lat - migrated.meetingPoint.coordinates.lat) < 0.000001 &&
-			Math.abs(original.meetingPoint.coordinates.lng - migrated.meetingPoint.coordinates.lng) < 0.000001 &&
+			Math.abs(original.meetingPoint.coordinates.lat - migrated.meetingPoint.coordinates.lat) <
+				0.000001 &&
+			Math.abs(original.meetingPoint.coordinates.lng - migrated.meetingPoint.coordinates.lng) <
+				0.000001 &&
 			original.schedule.day === migrated.schedule.day &&
 			original.schedule.time === migrated.schedule.time &&
 			original.route.name === migrated.route.name &&

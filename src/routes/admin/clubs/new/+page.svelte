@@ -53,7 +53,7 @@ Admin new club creation form
 			.replace(/\s+/g, '-')
 			.replace(/-+/g, '-')
 			.replace(/^-|-$/g, '');
-		
+
 		if (generated && generated !== formData.hostname) {
 			formData.hostname = generated;
 			checkHostnameAvailability(generated);
@@ -72,7 +72,9 @@ Admin new club creation form
 		hostnameError = '';
 
 		try {
-			const response = await fetch(`/api/admin/hostname/validate?hostname=${encodeURIComponent(hostname)}`);
+			const response = await fetch(
+				`/api/admin/hostname/validate?hostname=${encodeURIComponent(hostname)}`
+			);
 			const result = await response.json();
 
 			if (response.ok) {
@@ -100,7 +102,7 @@ Admin new club creation form
 	function handleHostnameChange() {
 		hostnameAvailable = null;
 		hostnameError = '';
-		
+
 		// Debounce the check
 		clearTimeout(hostnameCheckTimeout);
 		hostnameCheckTimeout = setTimeout(() => {
@@ -157,9 +159,7 @@ Admin new club creation form
 				<p class="page-subtitle">Create a new walking club configuration</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs" class="btn btn-outline">
-					← Back to Clubs
-				</a>
+				<a href="/admin/clubs" class="btn btn-outline"> ← Back to Clubs </a>
 			</div>
 		</div>
 	</div>
@@ -195,7 +195,7 @@ Admin new club creation form
 		<!-- Basic Information -->
 		<div class="form-section">
 			<h2 class="section-title">Basic Information</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="name" class="form-label required">Club Name</label>
@@ -244,16 +244,14 @@ Admin new club creation form
 							title="Only lowercase letters, numbers, and hyphens allowed"
 						/>
 						<span class="hostname-suffix">.walkingmens.club</span>
-						
+
 						{#if hostnameChecking}
 							<div class="hostname-status checking">
 								<span class="spinner"></span>
 								Checking...
 							</div>
 						{:else if hostnameAvailable === true}
-							<div class="hostname-status available">
-								✅ Available
-							</div>
+							<div class="hostname-status available">✅ Available</div>
 						{:else if hostnameAvailable === false || hostnameError}
 							<div class="hostname-status unavailable">
 								❌ {hostnameError || 'Not available'}
@@ -280,7 +278,7 @@ Admin new club creation form
 		<!-- Meeting Point -->
 		<div class="form-section">
 			<h2 class="section-title">Meeting Point</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="meetingPointName" class="form-label required">Meeting Point Name</label>
@@ -372,7 +370,7 @@ Admin new club creation form
 		<!-- Schedule -->
 		<div class="form-section">
 			<h2 class="section-title">Meeting Schedule</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="scheduleDay" class="form-label required">Day of Week</label>
@@ -428,7 +426,7 @@ Admin new club creation form
 		<!-- Walking Route -->
 		<div class="form-section">
 			<h2 class="section-title">Walking Route</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="routeName" class="form-label required">Route Name</label>
@@ -504,7 +502,7 @@ Admin new club creation form
 		<!-- Contact Information -->
 		<div class="form-section">
 			<h2 class="section-title">Contact Information</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label for="contactEmail" class="form-label">Email</label>
@@ -536,7 +534,11 @@ Admin new club creation form
 
 		<!-- Form Actions -->
 		<div class="form-actions">
-			<button type="submit" class="btn btn-primary" disabled={loading || hostnameAvailable === false}>
+			<button
+				type="submit"
+				class="btn btn-primary"
+				disabled={loading || hostnameAvailable === false}
+			>
 				{#if loading}
 					<span class="loading-spinner"></span>
 					Creating Club...
@@ -544,27 +546,17 @@ Admin new club creation form
 					Create Club
 				{/if}
 			</button>
-			
-			<a href="/admin/clubs" class="btn btn-outline">
-				Cancel
-			</a>
+
+			<a href="/admin/clubs" class="btn btn-outline"> Cancel </a>
 		</div>
 	</form>
 </div>
 
 <!-- Toast Notifications -->
-<Toast
-	bind:show={showToast}
-	message={toastMessage}
-	type={toastType}
-	on:close={closeToast}
-/>
+<Toast bind:show={showToast} message={toastMessage} type={toastType} on:close={closeToast} />
 
 <!-- Loading Overlay -->
-<LoadingOverlay
-	show={loading}
-	message="Creating club..."
-/>
+<LoadingOverlay show={loading} message="Creating club..." />
 
 <style>
 	.new-club-page {

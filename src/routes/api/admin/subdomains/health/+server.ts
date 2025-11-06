@@ -21,16 +21,19 @@ interface SubdomainHealthStatus {
 /**
  * Check if a subdomain is accessible
  */
-async function checkSubdomainHealth(hostname: string, clubName: string): Promise<SubdomainHealthStatus> {
+async function checkSubdomainHealth(
+	hostname: string,
+	clubName: string
+): Promise<SubdomainHealthStatus> {
 	const startTime = Date.now();
 	const issues: string[] = [];
 	let accessible = false;
-	
+
 	try {
 		// In a real implementation, you might make an HTTP request to check accessibility
 		// For now, we'll simulate the check based on system health
 		const systemHealth = await getServiceHealthStatus();
-		
+
 		if (systemHealth.database) {
 			accessible = true;
 		} else if (systemHealth.fallback) {
@@ -40,9 +43,9 @@ async function checkSubdomainHealth(hostname: string, clubName: string): Promise
 			accessible = false;
 			issues.push('System unavailable - database and fallback both down');
 		}
-		
+
 		const responseTime = Date.now() - startTime;
-		
+
 		// Determine overall status
 		let status: 'healthy' | 'degraded' | 'unhealthy';
 		if (!accessible) {
@@ -52,7 +55,7 @@ async function checkSubdomainHealth(hostname: string, clubName: string): Promise
 		} else {
 			status = 'healthy';
 		}
-		
+
 		return {
 			hostname,
 			clubName,
@@ -62,7 +65,6 @@ async function checkSubdomainHealth(hostname: string, clubName: string): Promise
 			lastChecked: new Date().toISOString(),
 			issues
 		};
-		
 	} catch (error) {
 		return {
 			hostname,
@@ -91,24 +93,24 @@ export const GET: RequestHandler = async (event) => {
 
 		// Get all clubs
 		const clubs = await getAllClubs();
-		
+
 		// Check health of each subdomain
 		const healthChecks = await Promise.all(
-			clubs.map(club => checkSubdomainHealth(club.hostname, club.name))
+			clubs.map((club) => checkSubdomainHealth(club.hostname, club.name))
 		);
-		
+
 		// Calculate summary statistics
 		const summary = {
 			total: healthChecks.length,
-			healthy: healthChecks.filter(h => h.status === 'healthy').length,
-			degraded: healthChecks.filter(h => h.status === 'degraded').length,
-			unhealthy: healthChecks.filter(h => h.status === 'unhealthy').length,
-			accessible: healthChecks.filter(h => h.accessible).length
+			healthy: healthChecks.filter((h) => h.status === 'healthy').length,
+			degraded: healthChecks.filter((h) => h.status === 'degraded').length,
+			unhealthy: healthChecks.filter((h) => h.status === 'unhealthy').length,
+			accessible: healthChecks.filter((h) => h.accessible).length
 		};
-		
+
 		// Get system health for context
 		const systemHealth = await getServiceHealthStatus();
-		
+
 		return json({
 			success: true,
 			timestamp: new Date().toISOString(),
@@ -124,12 +126,14 @@ export const GET: RequestHandler = async (event) => {
 				return statusOrder[a.status] - statusOrder[b.status];
 			})
 		});
-		
 	} catch (error) {
 		console.error('Subdomain health check API error:', error);
-		return json({ 
-			error: 'Failed to check subdomain health',
-			timestamp: new Date().toISOString()
-		}, { status: 500 });
+		return json(
+			{
+				error: 'Failed to check subdomain health',
+				timestamp: new Date().toISOString()
+			},
+			{ status: 500 }
+		);
 	}
 };

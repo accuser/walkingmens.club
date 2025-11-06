@@ -51,7 +51,7 @@ describe('MemoryClubCacheService', () => {
 
 	it('should store and retrieve club from cache', async () => {
 		const key = 'test-key';
-		
+
 		// Initially should return null
 		const initial = await cacheService.get(key);
 		expect(initial).toBeNull();
@@ -66,7 +66,7 @@ describe('MemoryClubCacheService', () => {
 
 	it('should respect TTL and expire entries', async () => {
 		const key = 'test-key';
-		
+
 		// Set with short TTL
 		await cacheService.set(key, mockClub, 100); // 100ms
 
@@ -75,7 +75,7 @@ describe('MemoryClubCacheService', () => {
 		expect(immediate).toEqual(mockClub);
 
 		// Wait for expiration
-		await new Promise(resolve => setTimeout(resolve, 150));
+		await new Promise((resolve) => setTimeout(resolve, 150));
 
 		// Should be expired
 		const expired = await cacheService.get(key);
@@ -84,9 +84,9 @@ describe('MemoryClubCacheService', () => {
 
 	it('should invalidate specific entries', async () => {
 		const key = 'test-key';
-		
+
 		await cacheService.set(key, mockClub);
-		
+
 		// Should be available
 		const beforeInvalidate = await cacheService.get(key);
 		expect(beforeInvalidate).toEqual(mockClub);
@@ -133,7 +133,7 @@ describe('MemoryClubCacheService', () => {
 
 	it('should track cache statistics', async () => {
 		const key = 'test-key';
-		
+
 		// Initial stats
 		let stats = cacheService.getStats();
 		expect(stats.hits).toBe(0);
@@ -149,7 +149,7 @@ describe('MemoryClubCacheService', () => {
 		// Set and hit
 		await cacheService.set(key, mockClub);
 		await cacheService.get(key);
-		
+
 		stats = cacheService.getStats();
 		expect(stats.hits).toBe(1);
 		expect(stats.misses).toBe(1);
@@ -172,10 +172,10 @@ describe('MemoryClubCacheService', () => {
 		const disabledCache = new MemoryClubCacheService(disabledConfig);
 
 		const key = 'test-key';
-		
+
 		// Set should do nothing
 		await disabledCache.set(key, mockClub);
-		
+
 		// Get should return null
 		const result = await disabledCache.get(key);
 		expect(result).toBeNull();

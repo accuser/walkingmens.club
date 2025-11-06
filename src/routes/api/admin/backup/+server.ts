@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ platform, request }) => {
 
 	try {
 		const service = getBackupService(platform);
-		
+
 		const history = service.getBackupHistory();
 		const stats = service.getBackupStats();
 
@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 
 	try {
 		const { type = 'manual' } = await request.json().catch(() => ({}));
-		
+
 		if (!['full', 'manual'].includes(type)) {
 			throw error(400, 'Invalid backup type. Must be "full" or "manual"');
 		}
@@ -81,7 +81,10 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 		});
 	} catch (err) {
 		console.error('Backup creation failed:', err);
-		throw error(500, `Backup creation failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		throw error(
+			500,
+			`Backup creation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+		);
 	}
 };
 
@@ -97,13 +100,13 @@ export const POST_restore: RequestHandler = async ({ platform, request }) => {
 	}
 
 	try {
-		const { 
-			backupId, 
-			tables, 
-			validateData = true, 
-			createBackupBeforeRestore = true 
+		const {
+			backupId,
+			tables,
+			validateData = true,
+			createBackupBeforeRestore = true
 		} = await request.json();
-		
+
 		if (!backupId) {
 			throw error(400, 'Backup ID is required');
 		}
@@ -119,7 +122,7 @@ export const POST_restore: RequestHandler = async ({ platform, request }) => {
 		return json({
 			success: result.success,
 			data: result,
-			message: result.success 
+			message: result.success
 				? `Successfully restored ${result.recordsRestored} records`
 				: `Restore completed with errors: ${result.errors.join('; ')}`
 		});
@@ -155,7 +158,10 @@ export const DELETE: RequestHandler = async ({ platform, request, params }) => {
 		});
 	} catch (err) {
 		console.error('Backup deletion failed:', err);
-		throw error(500, `Backup deletion failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+		throw error(
+			500,
+			`Backup deletion failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+		);
 	}
 };
 
@@ -172,7 +178,7 @@ export const GET_export: RequestHandler = async ({ platform, request, url }) => 
 
 	try {
 		const format = url.searchParams.get('format') || 'json';
-		
+
 		if (!['json', 'sql'].includes(format)) {
 			throw error(400, 'Invalid format. Must be "json" or "sql"');
 		}
@@ -209,8 +215,8 @@ export const POST_import: RequestHandler = async ({ platform, request }) => {
 	try {
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
-		const format = formData.get('format') as string || 'json';
-		
+		const format = (formData.get('format') as string) || 'json';
+
 		if (!file) {
 			throw error(400, 'File is required');
 		}
@@ -226,7 +232,7 @@ export const POST_import: RequestHandler = async ({ platform, request }) => {
 		return json({
 			success: result.success,
 			data: result,
-			message: result.success 
+			message: result.success
 				? `Successfully imported ${result.recordsImported} records`
 				: `Import completed with errors: ${result.errors.join('; ')}`
 		});

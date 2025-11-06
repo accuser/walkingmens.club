@@ -46,7 +46,7 @@ Error boundary component for graceful error handling
 			<div class="error-icon">⚠️</div>
 			<h2 class="error-title">Oops! Something went wrong</h2>
 			<p class="error-message">{fallback}</p>
-			
+
 			{#if showDetails && errorDetails}
 				<details class="error-details">
 					<summary>Technical Details</summary>
@@ -55,12 +55,8 @@ Error boundary component for graceful error handling
 			{/if}
 
 			<div class="error-actions">
-				<button class="btn btn-primary" on:click={retry}>
-					Try Again
-				</button>
-				<a href="/admin" class="btn btn-outline">
-					Go to Dashboard
-				</a>
+				<button class="btn btn-primary" on:click={retry}> Try Again </button>
+				<a href="/admin" class="btn btn-outline"> Go to Dashboard </a>
 			</div>
 		</div>
 	</div>

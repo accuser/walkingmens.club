@@ -34,10 +34,10 @@ export const GET: RequestHandler = async (event) => {
 
 		const { id } = event.params;
 		const clubService = new D1ClubDatabaseService(event.platform.env.DB);
-		
+
 		// Try to get club by ID first, then by hostname as fallback
 		let club = await clubService.getClubByHostname(id); // Using hostname as ID for now
-		
+
 		if (!club) {
 			return json({ error: 'Club not found' }, { status: 404 });
 		}
@@ -79,20 +79,23 @@ export const PUT: RequestHandler = async (event) => {
 		if (updates.hostname) {
 			const hostnameService = new HostnameValidationService(event.platform.env.DB);
 			const hostnameValidation = await hostnameService.validateHostname(updates.hostname);
-			
+
 			if (!hostnameValidation.valid) {
-				return json({ 
-					error: hostnameValidation.error || 'Invalid hostname',
-					suggestions: hostnameValidation.suggestions
-				}, { status: 400 });
+				return json(
+					{
+						error: hostnameValidation.error || 'Invalid hostname',
+						suggestions: hostnameValidation.suggestions
+					},
+					{ status: 400 }
+				);
 			}
 		}
 
 		const clubService = new D1ClubDatabaseService(event.platform.env.DB);
-		
+
 		try {
 			const updatedClub = await clubService.updateClub(id, updates);
-			
+
 			return json({
 				success: true,
 				club: updatedClub
@@ -134,10 +137,10 @@ export const DELETE: RequestHandler = async (event) => {
 
 		const { id } = event.params;
 		const clubService = new D1ClubDatabaseService(event.platform.env.DB);
-		
+
 		try {
 			await clubService.deleteClub(id);
-			
+
 			return json({
 				success: true,
 				message: 'Club deleted successfully'

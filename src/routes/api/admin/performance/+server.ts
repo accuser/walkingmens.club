@@ -25,16 +25,16 @@ export const GET: RequestHandler = async ({ platform, request }) => {
 	try {
 		// Get performance statistics
 		const stats = performanceMonitor.getPerformanceStats();
-		
+
 		// Get performance alerts
 		const alerts = performanceMonitor.getPerformanceAlerts();
-		
+
 		// Get optimization recommendations
 		const recommendations = performanceMonitor.getOptimizationRecommendations();
-		
+
 		// Get compression statistics
 		const compressionStats = compressionService.getCompressionStats();
-		
+
 		// Get slow queries
 		const slowQueries = performanceMonitor.getSlowQueries(10);
 
@@ -68,17 +68,17 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 
 	try {
 		const { query } = await request.json();
-		
+
 		if (!query || typeof query !== 'string') {
 			throw error(400, 'Query parameter is required');
 		}
 
 		const db = getDatabase(platform);
 		const optimizer = new QueryOptimizerService(db);
-		
+
 		// Analyze the query
 		const analysis = await optimizer.analyzeQuery(query);
-		
+
 		// Get optimization suggestions
 		const optimization = optimizer.optimizeQuery(query);
 
@@ -110,10 +110,10 @@ export const GET_indexes: RequestHandler = async ({ platform, request }) => {
 	try {
 		const db = getDatabase(platform);
 		const optimizer = new QueryOptimizerService(db);
-		
+
 		// Get index recommendations
 		const recommendations = await optimizer.getIndexRecommendations();
-		
+
 		// Get database statistics
 		const dbStats = await optimizer.getDatabaseStats();
 
@@ -144,14 +144,14 @@ export const POST_createIndexes: RequestHandler = async ({ platform, request }) 
 
 	try {
 		const { recommendations } = await request.json();
-		
+
 		if (!Array.isArray(recommendations)) {
 			throw error(400, 'Recommendations array is required');
 		}
 
 		const db = getDatabase(platform);
 		const optimizer = new QueryOptimizerService(db);
-		
+
 		// Create the recommended indexes
 		const result = await optimizer.createRecommendedIndexes(recommendations);
 
@@ -207,7 +207,7 @@ export const GET_export: RequestHandler = async ({ platform, request }) => {
 
 	try {
 		const metrics = performanceMonitor.exportMetrics();
-		
+
 		// Create CSV-like export format
 		const exportData = {
 			exportTime: new Date().toISOString(),

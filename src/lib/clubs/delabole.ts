@@ -7,16 +7,16 @@ const delaboleRoute = [
 	{ lat: 50.6235, lng: -4.7265 }, // Head towards quarry
 	{ lat: 50.6248, lng: -4.7285 }, // North edge
 	{ lat: 50.6265, lng: -4.7295 }, // Northeast
-	{ lat: 50.6275, lng: -4.7280 }, // East side
-	{ lat: 50.6270, lng: -4.7260 }, // Southeast
+	{ lat: 50.6275, lng: -4.728 }, // East side
+	{ lat: 50.627, lng: -4.726 }, // Southeast
 	{ lat: 50.6255, lng: -4.7245 }, // South
-	{ lat: 50.6240, lng: -4.7235 }, // Southwest
+	{ lat: 50.624, lng: -4.7235 }, // Southwest
 	{ lat: 50.6228, lng: -4.7242 } // Return to start
 ];
 
 export const delabole: ClubConfig = {
 	id: 'delabole',
-	name: 'Delabole Walking Men\'s Club',
+	name: "Delabole Walking Men's Club",
 	location: 'Delabole, Cornwall',
 	hostname: 'delabole.walkingmens.club',
 	meetingPoint: {

@@ -78,9 +78,7 @@ Admin layout component with authentication wrapper and navigation
 			<div class="header-right">
 				<div class="user-info">
 					<span class="user-name">Welcome, {data.user?.username}</span>
-					<button class="logout-btn" on:click={handleLogout} type="button">
-						Logout
-					</button>
+					<button class="logout-btn" on:click={handleLogout} type="button"> Logout </button>
 				</div>
 			</div>
 		</div>
@@ -108,7 +106,9 @@ Admin layout component with authentication wrapper and navigation
 	<!-- Main content -->
 	<main class="admin-main">
 		<div class="main-content">
-			<ErrorBoundary fallback="An error occurred in the admin panel. Please try refreshing the page.">
+			<ErrorBoundary
+				fallback="An error occurred in the admin panel. Please try refreshing the page."
+			>
 				<slot />
 			</ErrorBoundary>
 		</div>

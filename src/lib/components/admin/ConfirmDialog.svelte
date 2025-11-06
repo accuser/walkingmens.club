@@ -40,9 +40,9 @@ Reusable confirmation dialog component
 
 {#if show}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-	<div 
-		class="dialog-overlay" 
-		role="dialog" 
+	<div
+		class="dialog-overlay"
+		role="dialog"
 		aria-modal="true"
 		aria-labelledby="dialog-title"
 		on:click={handleBackdropClick}
@@ -58,12 +58,7 @@ Reusable confirmation dialog component
 			</div>
 
 			<div class="dialog-actions">
-				<button
-					type="button"
-					class="btn btn-outline"
-					on:click={handleCancel}
-					disabled={loading}
-				>
+				<button type="button" class="btn btn-outline" on:click={handleCancel} disabled={loading}>
 					{cancelText}
 				</button>
 				<button
@@ -102,7 +97,9 @@ Reusable confirmation dialog component
 	.dialog-content {
 		background: white;
 		border-radius: 0.75rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 20px 25px -5px rgba(0, 0, 0, 0.1),
+			0 10px 10px -5px rgba(0, 0, 0, 0.04);
 		max-width: 400px;
 		width: 100%;
 		max-height: 90vh;

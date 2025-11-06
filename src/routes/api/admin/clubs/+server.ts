@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 
 		return json({
 			success: true,
-			clubs: clubs.map(club => ({
+			clubs: clubs.map((club) => ({
 				...club,
 				// Add metadata for admin interface
 				createdAt: new Date().toISOString(), // This would come from database in real implementation
@@ -73,31 +73,40 @@ export const POST: RequestHandler = async (event) => {
 
 		// Validate required fields
 		if (!clubData.name || !clubData.location || !clubData.hostname) {
-			return json({ 
-				error: 'Missing required fields: name, location, hostname' 
-			}, { status: 400 });
+			return json(
+				{
+					error: 'Missing required fields: name, location, hostname'
+				},
+				{ status: 400 }
+			);
 		}
 
 		// Validate hostname
 		const hostnameService = new HostnameValidationService(event.platform.env.DB);
 		const hostnameValidation = await hostnameService.validateHostname(clubData.hostname);
-		
+
 		if (!hostnameValidation.valid || !hostnameValidation.available) {
-			return json({ 
-				error: hostnameValidation.error || 'Invalid hostname',
-				suggestions: hostnameValidation.suggestions
-			}, { status: 400 });
+			return json(
+				{
+					error: hostnameValidation.error || 'Invalid hostname',
+					suggestions: hostnameValidation.suggestions
+				},
+				{ status: 400 }
+			);
 		}
 
 		const clubService = new D1ClubDatabaseService(event.platform.env.DB);
-		
+
 		try {
 			const newClub = await clubService.createClub(clubData);
-			
-			return json({
-				success: true,
-				club: newClub
-			}, { status: 201 });
+
+			return json(
+				{
+					success: true,
+					club: newClub
+				},
+				{ status: 201 }
+			);
 		} catch (error) {
 			if (error instanceof ValidationError) {
 				return json({ error: error.message }, { status: 400 });

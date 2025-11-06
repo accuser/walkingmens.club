@@ -24,26 +24,26 @@ interface BackupStatus {
 async function getBackupStatus(): Promise<BackupStatus> {
 	// Simulate backup status check
 	// In production, this would integrate with Cloudflare D1 backup systems
-	
+
 	const now = new Date();
 	const lastBackup = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
 	const nextBackup = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
-	
+
 	const issues: string[] = [];
 	let status: 'healthy' | 'warning' | 'error' = 'healthy';
-	
+
 	// Check if last backup is too old
 	const hoursSinceLastBackup = (now.getTime() - lastBackup.getTime()) / (1000 * 60 * 60);
 	if (hoursSinceLastBackup > 48) {
 		issues.push('Last backup is more than 48 hours old');
 		status = 'warning';
 	}
-	
+
 	if (hoursSinceLastBackup > 72) {
 		issues.push('Last backup is more than 72 hours old - critical');
 		status = 'error';
 	}
-	
+
 	return {
 		lastBackup: lastBackup.toISOString(),
 		backupSize: 1024 * 1024 * 2.5, // 2.5 MB (simulated)
@@ -61,7 +61,7 @@ async function getBackupStatus(): Promise<BackupStatus> {
 async function getRecoveryStatus() {
 	// Simulate recovery test status
 	const lastRecoveryTest = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
-	
+
 	return {
 		lastRecoveryTest: lastRecoveryTest.toISOString(),
 		testStatus: 'passed',
@@ -90,7 +90,7 @@ export const GET: RequestHandler = async (event) => {
 			getBackupStatus(),
 			getRecoveryStatus()
 		]);
-		
+
 		return json({
 			success: true,
 			timestamp: new Date().toISOString(),
@@ -98,13 +98,15 @@ export const GET: RequestHandler = async (event) => {
 			recovery: recoveryStatus,
 			recommendations: generateRecommendations(backupStatus, recoveryStatus)
 		});
-		
 	} catch (error) {
 		console.error('Backup status API error:', error);
-		return json({ 
-			error: 'Failed to get backup status',
-			timestamp: new Date().toISOString()
-		}, { status: 500 });
+		return json(
+			{
+				error: 'Failed to get backup status',
+				timestamp: new Date().toISOString()
+			},
+			{ status: 500 }
+		);
 	}
 };
 
@@ -113,24 +115,24 @@ export const GET: RequestHandler = async (event) => {
  */
 function generateRecommendations(backupStatus: BackupStatus, recoveryStatus: any): string[] {
 	const recommendations: string[] = [];
-	
+
 	if (backupStatus.status === 'error') {
 		recommendations.push('Immediate action required: Backup system is failing');
 	} else if (backupStatus.status === 'warning') {
 		recommendations.push('Review backup schedule and ensure regular execution');
 	}
-	
+
 	// Check recovery test age
 	const lastTest = new Date(recoveryStatus.lastRecoveryTest);
 	const daysSinceTest = (Date.now() - lastTest.getTime()) / (1000 * 60 * 60 * 24);
-	
+
 	if (daysSinceTest > 30) {
 		recommendations.push('Schedule a recovery test - last test was over 30 days ago');
 	}
-	
+
 	if (backupStatus.issues.length === 0 && daysSinceTest <= 30) {
 		recommendations.push('Backup and recovery systems are operating normally');
 	}
-	
+
 	return recommendations;
 }

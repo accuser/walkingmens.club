@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		if (hostname === 'walkingmens.club' || hostname === 'localhost') {
 			const clubs = await getAllClubs();
 			const healthStatus = await getServiceHealthStatus();
-			
+
 			return {
 				clubs,
 				club: null,
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		if (!club) {
 			// Check if database is available to provide better error messaging
 			const healthStatus = await getServiceHealthStatus();
-			
+
 			if (!healthStatus.database && !healthStatus.fallback) {
 				// System is completely down
 				throw error(503, {
@@ -38,13 +38,15 @@ export const load: PageServerLoad = async ({ url }) => {
 				// Database down but fallback available - club might exist in database but not in fallback
 				throw error(404, {
 					message: `Club configuration temporarily unavailable for ${hostname}`,
-					details: 'The club may exist but cannot be accessed due to a temporary system issue. Please try again later.'
+					details:
+						'The club may exist but cannot be accessed due to a temporary system issue. Please try again later.'
 				});
 			} else {
 				// Database available but club not found - definitive 404
 				throw error(404, {
 					message: `No walking club found for ${hostname}`,
-					details: 'This subdomain is not configured for any walking club. Please check the URL or contact support.'
+					details:
+						'This subdomain is not configured for any walking club. Please check the URL or contact support.'
 				});
 			}
 		}
@@ -57,13 +59,12 @@ export const load: PageServerLoad = async ({ url }) => {
 				usingFallback: false
 			}
 		};
-		
 	} catch (err) {
 		// If it's already an HTTP error, re-throw it
 		if (err && typeof err === 'object' && 'status' in err) {
 			throw err;
 		}
-		
+
 		// For unexpected errors, provide a generic error response
 		console.error('Unexpected error in page load:', err);
 		throw error(500, {

@@ -87,8 +87,8 @@
 		<div class="space-y-6 text-slate-700">
 			<p class="text-lg leading-relaxed">
 				Walking groups offer a simple, accessible way to improve your physical and mental health.
-				Whether you're looking to stay active, meet people in your area, or just get some fresh
-				air, there's no pressure—just turn up and walk.
+				Whether you're looking to stay active, meet people in your area, or just get some fresh air,
+				there's no pressure—just turn up and walk.
 			</p>
 			<div class="grid gap-6 md:grid-cols-3">
 				<div class="text-center">
@@ -197,12 +197,7 @@
 		{:else}
 			<div class="rounded-lg bg-green-50 p-3 text-center">
 				<p class="font-medium text-green-700">
-					<svg
-						class="inline h-5 w-5"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-					>
+					<svg class="inline h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -228,7 +223,7 @@
 
 				<div class="p-6">
 					<div class="mb-3 flex items-start justify-between gap-3">
-						<h3 class="text-xl font-bold leading-tight text-slate-900 group-hover:text-blue-600">
+						<h3 class="text-xl leading-tight font-bold text-slate-900 group-hover:text-blue-600">
 							{club.name}
 						</h3>
 						{#if club.distance !== undefined}
@@ -288,7 +283,12 @@
 						class="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 text-sm font-semibold text-blue-600 group-hover:text-blue-700"
 					>
 						<span>View full details</span>
-						<svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-5 w-5 transition group-hover:translate-x-1"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"

@@ -8,7 +8,10 @@ import type { ClubConfig } from '../clubs/types';
  * Validation error class for database constraint violations
  */
 export class ValidationError extends Error {
-	constructor(message: string, public field?: string) {
+	constructor(
+		message: string,
+		public field?: string
+	) {
 		super(message);
 		this.name = 'ValidationError';
 	}
@@ -115,7 +118,8 @@ export function validateClubConfig(clubConfig: Partial<ClubConfig>): void {
  */
 export function isValidHostname(hostname: string): boolean {
 	// Basic hostname validation - alphanumeric, dots, and hyphens
-	const hostnameRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+	const hostnameRegex =
+		/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 	return hostnameRegex.test(hostname) && hostname.length <= 253;
 }
 

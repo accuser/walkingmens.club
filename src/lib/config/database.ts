@@ -5,7 +5,7 @@
 export const DATABASE_CONFIG = {
 	// Database binding name (matches wrangler.jsonc)
 	BINDING_NAME: 'DB',
-	
+
 	// Table names
 	TABLES: {
 		CLUBS: 'clubs',
@@ -14,14 +14,14 @@ export const DATABASE_CONFIG = {
 		WALKING_ROUTES: 'walking_routes',
 		ROUTE_POINTS: 'route_points'
 	},
-	
+
 	// Cache configuration
 	CACHE: {
 		TTL_SECONDS: 3600, // 1 hour
 		CLUB_KEY_PREFIX: 'club:',
 		ALL_CLUBS_KEY: 'clubs:all'
 	},
-	
+
 	// Database constraints
 	CONSTRAINTS: {
 		MAX_ROUTE_POINTS: 100,
@@ -35,7 +35,9 @@ export const DATABASE_CONFIG = {
  */
 export function getDatabase(platform: App.Platform | undefined) {
 	if (!platform?.env?.DB) {
-		throw new Error('Database binding not available. Ensure D1 database is configured in wrangler.jsonc');
+		throw new Error(
+			'Database binding not available. Ensure D1 database is configured in wrangler.jsonc'
+		);
 	}
 	return platform.env.DB;
 }

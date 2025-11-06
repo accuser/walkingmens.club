@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	
+
 	let retryCount = $state(0);
 	let isRetrying = $state(false);
 	let lastRetry = $state(null);
-	
+
 	async function checkSystemHealth() {
 		try {
 			const response = await fetch('/api/health');
@@ -22,16 +22,16 @@
 			return false;
 		}
 	}
-	
+
 	async function retryConnection() {
 		if (isRetrying) return;
-		
+
 		isRetrying = true;
 		retryCount++;
 		lastRetry = new Date();
-		
+
 		const isHealthy = await checkSystemHealth();
-		
+
 		if (!isHealthy) {
 			// Schedule next retry with exponential backoff
 			const delay = Math.min(1000 * Math.pow(2, retryCount - 1), 30000); // Max 30 seconds
@@ -40,7 +40,7 @@
 			}, delay);
 		}
 	}
-	
+
 	onMount(() => {
 		// Auto-retry every 30 seconds
 		const interval = setInterval(async () => {
@@ -48,32 +48,56 @@
 				await checkSystemHealth();
 			}
 		}, 30000);
-		
+
 		return () => clearInterval(interval);
 	});
 </script>
 
 <svelte:head>
 	<title>System Maintenance - Walking Mens Club</title>
-	<meta name="robots" content="noindex, nofollow">
+	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="maintenance-page">
 	<div class="maintenance-content">
 		<div class="maintenance-icon">
-			<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-				<path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-				<path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			<svg
+				width="80"
+				height="80"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M12 2L2 7L12 12L22 7L12 2Z"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M2 17L12 22L22 17"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+				<path
+					d="M2 12L12 17L22 12"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
 			</svg>
 		</div>
-		
+
 		<h1>System Maintenance</h1>
 		<p class="maintenance-message">
-			We're currently performing system maintenance to improve your experience. 
-			Our walking club configurations are temporarily unavailable.
+			We're currently performing system maintenance to improve your experience. Our walking club
+			configurations are temporarily unavailable.
 		</p>
-		
+
 		<div class="status-info">
 			<div class="status-item">
 				<span class="status-label">Status:</span>
@@ -90,13 +114,9 @@
 				</div>
 			{/if}
 		</div>
-		
+
 		<div class="actions">
-			<button 
-				onclick={retryConnection} 
-				disabled={isRetrying}
-				class="retry-button"
-			>
+			<button onclick={retryConnection} disabled={isRetrying} class="retry-button">
 				{#if isRetrying}
 					<span class="spinner"></span>
 					Checking...
@@ -104,12 +124,10 @@
 					Check Again
 				{/if}
 			</button>
-			
-			<a href="https://walkingmens.club" class="home-link">
-				Return to Main Site
-			</a>
+
+			<a href="https://walkingmens.club" class="home-link"> Return to Main Site </a>
 		</div>
-		
+
 		<div class="help-section">
 			<h3>What's happening?</h3>
 			<ul>
@@ -118,13 +136,13 @@
 				<li>No data is being lost during this process</li>
 				<li>Normal service will resume shortly</li>
 			</ul>
-			
+
 			<p class="contact-info">
-				If you have urgent questions, please contact us at 
+				If you have urgent questions, please contact us at
 				<a href="mailto:support@walkingmens.club">support@walkingmens.club</a>
 			</p>
 		</div>
-		
+
 		<div class="auto-refresh-notice">
 			<p>This page will automatically check for updates every 30 seconds.</p>
 		</div>
@@ -163,8 +181,13 @@
 	}
 
 	@keyframes float {
-		0%, 100% { transform: translateY(0px); }
-		50% { transform: translateY(-10px); }
+		0%,
+		100% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-10px);
+		}
 	}
 
 	h1 {
@@ -255,8 +278,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	.home-link {

@@ -10,7 +10,10 @@ import { checkDatabaseHealth } from '../config/database';
  * Database connection error types
  */
 export class DatabaseConnectionError extends Error {
-	constructor(message: string, public cause?: Error) {
+	constructor(
+		message: string,
+		public cause?: Error
+	) {
 		super(message);
 		this.name = 'DatabaseConnectionError';
 	}
@@ -98,7 +101,7 @@ export class DatabaseConnectionManager {
 		}
 
 		const connectionId = this.generateConnectionId();
-		
+
 		try {
 			// Check if we have a healthy pooled connection
 			const pooledConnection = this.getPooledConnection(connectionId);
@@ -108,10 +111,10 @@ export class DatabaseConnectionManager {
 
 			// Create new connection with health check
 			const healthyDb = await this.createHealthyConnection(db);
-			
+
 			// Add to pool
 			this.addToPool(connectionId, healthyDb);
-			
+
 			return healthyDb;
 		} catch (error) {
 			console.error('Failed to get database connection:', error);
@@ -131,7 +134,7 @@ export class DatabaseConnectionManager {
 		operationName: string = 'database operation'
 	): Promise<T> {
 		let lastError: Error | null = null;
-		
+
 		for (let attempt = 1; attempt <= this.retryConfig.maxAttempts; attempt++) {
 			try {
 				const connection = await this.getConnection(db);
@@ -140,14 +143,14 @@ export class DatabaseConnectionManager {
 					this.poolConfig.connectionTimeoutMs,
 					`${operationName} (attempt ${attempt})`
 				);
-				
+
 				// Mark connection as healthy on success
 				this.markConnectionHealthy(connection);
-				
+
 				return result;
 			} catch (error) {
 				lastError = error instanceof Error ? error : new Error(String(error));
-				
+
 				console.warn(
 					`${operationName} failed on attempt ${attempt}/${this.retryConfig.maxAttempts}:`,
 					lastError.message
@@ -190,11 +193,11 @@ export class DatabaseConnectionManager {
 			}, timeoutMs);
 
 			operation()
-				.then(result => {
+				.then((result) => {
 					clearTimeout(timeout);
 					resolve(result);
 				})
-				.catch(error => {
+				.catch((error) => {
 					clearTimeout(timeout);
 					reject(error);
 				});
@@ -214,8 +217,9 @@ export class DatabaseConnectionManager {
 			'constraint failed'
 		];
 
-		return nonRetryablePatterns.some(pattern => 
-			error.name.includes(pattern) || error.message.toLowerCase().includes(pattern.toLowerCase())
+		return nonRetryablePatterns.some(
+			(pattern) =>
+				error.name.includes(pattern) || error.message.toLowerCase().includes(pattern.toLowerCase())
 		);
 	}
 
@@ -223,7 +227,8 @@ export class DatabaseConnectionManager {
 	 * Calculate retry delay with exponential backoff
 	 */
 	private calculateRetryDelay(attempt: number): number {
-		const delay = this.retryConfig.baseDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt - 1);
+		const delay =
+			this.retryConfig.baseDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt - 1);
 		return Math.min(delay, this.retryConfig.maxDelayMs);
 	}
 
@@ -243,7 +248,7 @@ export class DatabaseConnectionManager {
 	 */
 	private getPooledConnection(connectionId: string): PooledConnection | null {
 		const connection = this.connections.get(connectionId);
-		
+
 		if (!connection || !connection.isHealthy || connection.inUse) {
 			return null;
 		}
@@ -258,7 +263,7 @@ export class DatabaseConnectionManager {
 		// Mark as in use
 		connection.inUse = true;
 		connection.lastUsed = now;
-		
+
 		return connection;
 	}
 
@@ -271,7 +276,7 @@ export class DatabaseConnectionManager {
 			const oldestId = Array.from(this.connections.entries())
 				.filter(([, conn]) => !conn.inUse)
 				.sort(([, a], [, b]) => a.lastUsed - b.lastUsed)[0]?.[0];
-			
+
 			if (oldestId) {
 				this.connections.delete(oldestId);
 			}
@@ -361,7 +366,7 @@ export class DatabaseConnectionManager {
 	 */
 	async shutdown(): Promise<void> {
 		this.isShuttingDown = true;
-		
+
 		if (this.healthCheckInterval) {
 			clearInterval(this.healthCheckInterval);
 		}
@@ -369,7 +374,7 @@ export class DatabaseConnectionManager {
 		// Wait for active connections to finish (with timeout)
 		const shutdownTimeout = 10000; // 10 seconds
 		const startTime = Date.now();
-		
+
 		while (this.hasActiveConnections() && Date.now() - startTime < shutdownTimeout) {
 			await this.sleep(100);
 		}
@@ -382,14 +387,14 @@ export class DatabaseConnectionManager {
 	 * Check if there are active connections
 	 */
 	private hasActiveConnections(): boolean {
-		return Array.from(this.connections.values()).some(conn => conn.inUse);
+		return Array.from(this.connections.values()).some((conn) => conn.inUse);
 	}
 
 	/**
 	 * Sleep utility
 	 */
 	private sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	/**
@@ -401,11 +406,11 @@ export class DatabaseConnectionManager {
 		healthyConnections: number;
 	} {
 		const connections = Array.from(this.connections.values());
-		
+
 		return {
 			totalConnections: connections.length,
-			activeConnections: connections.filter(conn => conn.inUse).length,
-			healthyConnections: connections.filter(conn => conn.isHealthy).length
+			activeConnections: connections.filter((conn) => conn.inUse).length,
+			healthyConnections: connections.filter((conn) => conn.isHealthy).length
 		};
 	}
 }

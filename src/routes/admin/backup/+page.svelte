@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	
+
 	let backupData = $state(null);
 	let healthData = $state(null);
 	let loading = $state(true);
@@ -11,14 +11,14 @@
 	let selectedBackup = $state(null);
 	let showRestoreDialog = $state(false);
 	let showImportDialog = $state(false);
-	
+
 	// Restore options
 	let restoreOptions = $state({
 		validateData: true,
 		createBackupBeforeRestore: true,
 		tables: []
 	});
-	
+
 	// Import options
 	let importFile = $state(null);
 	let importFormat = $state('json');
@@ -30,7 +30,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				backupData = result.data;
@@ -50,7 +50,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				healthData = result.data;
@@ -72,11 +72,11 @@
 				},
 				body: JSON.stringify({ type: 'manual' })
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				await fetchBackupData();
@@ -96,16 +96,16 @@
 		if (!confirm(`Are you sure you want to delete backup ${backupId}?`)) {
 			return;
 		}
-		
+
 		try {
 			const response = await fetch(`/api/admin/backup/${backupId}`, {
 				method: 'DELETE'
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				await fetchBackupData();
@@ -121,7 +121,7 @@
 
 	async function restoreBackup() {
 		if (!selectedBackup) return;
-		
+
 		restoringBackup = true;
 		try {
 			const response = await fetch('/api/admin/backup/restore', {
@@ -134,11 +134,11 @@
 					...restoreOptions
 				})
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				alert(`Restore completed successfully: ${result.data.recordsRestored} records restored`);
@@ -161,7 +161,7 @@
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const blob = await response.blob();
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
@@ -182,22 +182,22 @@
 			alert('Please select a file to import');
 			return;
 		}
-		
+
 		importing = true;
 		try {
 			const formData = new FormData();
 			formData.append('file', importFile);
 			formData.append('format', importFormat);
-			
+
 			const response = await fetch('/api/admin/backup/import', {
 				method: 'POST',
 				body: formData
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			if (result.success) {
 				alert(`Import completed successfully: ${result.data.recordsImported} records imported`);
@@ -219,14 +219,14 @@
 			const response = await fetch('/api/admin/backup/health/check', {
 				method: 'POST'
 			});
-			
+
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 			}
-			
+
 			const result = await response.json();
 			await fetchHealthData();
-			
+
 			if (result.success) {
 				alert(result.message);
 			}
@@ -250,28 +250,40 @@
 
 	function getStatusClass(status) {
 		switch (status) {
-			case 'completed': return 'status-success';
-			case 'failed': return 'status-error';
-			case 'pending': return 'status-pending';
-			default: return '';
+			case 'completed':
+				return 'status-success';
+			case 'failed':
+				return 'status-error';
+			case 'pending':
+				return 'status-pending';
+			default:
+				return '';
 		}
 	}
 
 	function getHealthStatusClass(status) {
 		switch (status) {
-			case 'pass': return 'health-pass';
-			case 'fail': return 'health-fail';
-			case 'warn': return 'health-warn';
-			default: return '';
+			case 'pass':
+				return 'health-pass';
+			case 'fail':
+				return 'health-fail';
+			case 'warn':
+				return 'health-warn';
+			default:
+				return '';
 		}
 	}
 
 	function getAlertClass(type) {
 		switch (type) {
-			case 'error': return 'alert-error';
-			case 'warning': return 'alert-warning';
-			case 'info': return 'alert-info';
-			default: return '';
+			case 'error':
+				return 'alert-error';
+			case 'warning':
+				return 'alert-warning';
+			case 'info':
+				return 'alert-info';
+			default:
+				return '';
 		}
 	}
 
@@ -295,15 +307,9 @@
 	<div class="page-header">
 		<h1>Backup & Disaster Recovery</h1>
 		<div class="header-actions">
-			<button onclick={() => showImportDialog = true} class="btn-secondary">
-				Import Data
-			</button>
-			<button onclick={() => exportData('json')} class="btn-secondary">
-				Export JSON
-			</button>
-			<button onclick={() => exportData('sql')} class="btn-secondary">
-				Export SQL
-			</button>
+			<button onclick={() => (showImportDialog = true)} class="btn-secondary"> Import Data </button>
+			<button onclick={() => exportData('json')} class="btn-secondary"> Export JSON </button>
+			<button onclick={() => exportData('sql')} class="btn-secondary"> Export SQL </button>
 			<button onclick={createBackup} disabled={creatingBackup} class="btn-primary">
 				{creatingBackup ? 'Creating...' : 'Create Backup'}
 			</button>
@@ -318,7 +324,13 @@
 	{:else if error}
 		<div class="error-state">
 			<p>Failed to load backup data: {error}</p>
-			<button onclick={() => { fetchBackupData(); fetchHealthData(); }} class="btn-primary">Retry</button>
+			<button
+				onclick={() => {
+					fetchBackupData();
+					fetchHealthData();
+				}}
+				class="btn-primary">Retry</button
+			>
 		</div>
 	{:else}
 		<!-- System Health Overview -->
@@ -326,11 +338,9 @@
 			<div class="health-section">
 				<div class="section-header">
 					<h2>System Health</h2>
-					<button onclick={runHealthCheck} class="btn-secondary">
-						Run Health Check
-					</button>
+					<button onclick={runHealthCheck} class="btn-secondary"> Run Health Check </button>
 				</div>
-				
+
 				<div class="health-overview">
 					<div class="health-status {healthData.overall.healthy ? 'healthy' : 'unhealthy'}">
 						<div class="status-indicator">
@@ -343,7 +353,7 @@
 							Last check: {formatDate(healthData.overall.lastCheck)}
 						</div>
 					</div>
-					
+
 					<div class="health-metrics">
 						<div class="metric">
 							<div class="metric-label">Avg Query Time</div>
@@ -459,17 +469,14 @@
 										</td>
 										<td class="actions">
 											{#if backup.status === 'completed'}
-												<button 
+												<button
 													onclick={() => openRestoreDialog(backup)}
 													class="btn-small btn-secondary"
 												>
 													Restore
 												</button>
 											{/if}
-											<button 
-												onclick={() => deleteBackup(backup.id)}
-												class="btn-small btn-danger"
-											>
+											<button onclick={() => deleteBackup(backup.id)} class="btn-small btn-danger">
 												Delete
 											</button>
 										</td>
@@ -491,11 +498,11 @@
 
 <!-- Restore Dialog -->
 {#if showRestoreDialog && selectedBackup}
-	<div class="modal-overlay" onclick={() => showRestoreDialog = false}>
+	<div class="modal-overlay" onclick={() => (showRestoreDialog = false)}>
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Restore from Backup</h3>
-				<button onclick={() => showRestoreDialog = false} class="close-btn">&times;</button>
+				<button onclick={() => (showRestoreDialog = false)} class="close-btn">&times;</button>
 			</div>
 			<div class="modal-content">
 				<div class="backup-info">
@@ -503,7 +510,7 @@
 					<p><strong>Created:</strong> {formatDate(selectedBackup.timestamp)}</p>
 					<p><strong>Records:</strong> {selectedBackup.recordCount}</p>
 				</div>
-				
+
 				<div class="restore-options">
 					<label class="checkbox-label">
 						<input type="checkbox" bind:checked={restoreOptions.validateData} />
@@ -514,17 +521,13 @@
 						Create backup before restore
 					</label>
 				</div>
-				
+
 				<div class="table-selection">
 					<p><strong>Tables to restore (leave empty for all):</strong></p>
 					<div class="table-checkboxes">
 						{#each ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'] as table}
 							<label class="checkbox-label">
-								<input 
-									type="checkbox" 
-									bind:group={restoreOptions.tables}
-									value={table}
-								/>
+								<input type="checkbox" bind:group={restoreOptions.tables} value={table} />
 								{table}
 							</label>
 						{/each}
@@ -532,14 +535,8 @@
 				</div>
 			</div>
 			<div class="modal-actions">
-				<button onclick={() => showRestoreDialog = false} class="btn-secondary">
-					Cancel
-				</button>
-				<button 
-					onclick={restoreBackup} 
-					disabled={restoringBackup}
-					class="btn-danger"
-				>
+				<button onclick={() => (showRestoreDialog = false)} class="btn-secondary"> Cancel </button>
+				<button onclick={restoreBackup} disabled={restoringBackup} class="btn-danger">
 					{restoringBackup ? 'Restoring...' : 'Restore'}
 				</button>
 			</div>
@@ -549,11 +546,11 @@
 
 <!-- Import Dialog -->
 {#if showImportDialog}
-	<div class="modal-overlay" onclick={() => showImportDialog = false}>
+	<div class="modal-overlay" onclick={() => (showImportDialog = false)}>
 		<div class="modal" onclick={(e) => e.stopPropagation()}>
 			<div class="modal-header">
 				<h3>Import Data</h3>
-				<button onclick={() => showImportDialog = false} class="close-btn">&times;</button>
+				<button onclick={() => (showImportDialog = false)} class="close-btn">&times;</button>
 			</div>
 			<div class="modal-content">
 				<div class="import-options">
@@ -564,27 +561,21 @@
 							<option value="sql">SQL</option>
 						</select>
 					</div>
-					
+
 					<div class="form-group">
 						<label for="import-file">File:</label>
-						<input 
+						<input
 							id="import-file"
-							type="file" 
+							type="file"
 							accept=".json,.sql"
-							onchange={(e) => importFile = e.target.files[0]}
+							onchange={(e) => (importFile = e.target.files[0])}
 						/>
 					</div>
 				</div>
 			</div>
 			<div class="modal-actions">
-				<button onclick={() => showImportDialog = false} class="btn-secondary">
-					Cancel
-				</button>
-				<button 
-					onclick={importData} 
-					disabled={importing || !importFile}
-					class="btn-primary"
-				>
+				<button onclick={() => (showImportDialog = false)} class="btn-secondary"> Cancel </button>
+				<button onclick={importData} disabled={importing || !importFile} class="btn-primary">
 					{importing ? 'Importing...' : 'Import'}
 				</button>
 			</div>
@@ -620,7 +611,10 @@
 		gap: 1rem;
 	}
 
-	.btn-primary, .btn-secondary, .btn-danger, .btn-small {
+	.btn-primary,
+	.btn-secondary,
+	.btn-danger,
+	.btn-small {
 		padding: 0.5rem 1rem;
 		border: none;
 		border-radius: 6px;
@@ -663,12 +657,15 @@
 		background: #b91c1c;
 	}
 
-	.btn-primary:disabled, .btn-secondary:disabled {
+	.btn-primary:disabled,
+	.btn-secondary:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
 
-	.loading-state, .error-state, .empty-state {
+	.loading-state,
+	.error-state,
+	.empty-state {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -688,11 +685,17 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
-	.health-section, .stats-section, .history-section {
+	.health-section,
+	.stats-section,
+	.history-section {
 		margin-bottom: 3rem;
 	}
 
@@ -1067,7 +1070,8 @@
 		margin: 0.5rem 0;
 	}
 
-	.restore-options, .table-selection {
+	.restore-options,
+	.table-selection {
 		margin-bottom: 1.5rem;
 	}
 

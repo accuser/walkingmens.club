@@ -34,17 +34,12 @@
 </svelte:head>
 
 <!-- Print Button (hidden when printing) -->
-<div class="no-print fixed right-4 top-4 z-10">
+<div class="no-print fixed top-4 right-4 z-10">
 	<button
 		onclick={handlePrint}
 		class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
 	>
-		<svg
-			class="mr-2 inline h-5 w-5"
-			fill="none"
-			stroke="currentColor"
-			viewBox="0 0 24 24"
-		>
+		<svg class="mr-2 inline h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -140,12 +135,14 @@
 				<p class="text-lg font-semibold text-slate-800">{club.route.name}</p>
 				{#if club.route.distance}
 					<p class="mt-2 text-lg text-slate-700">
-						<strong>Distance:</strong> {club.route.distance}
+						<strong>Distance:</strong>
+						{club.route.distance}
 					</p>
 				{/if}
 				{#if club.route.duration}
 					<p class="text-lg text-slate-700">
-						<strong>Duration:</strong> {club.route.duration}
+						<strong>Duration:</strong>
+						{club.route.duration}
 					</p>
 				{/if}
 				{#if club.route.difficulty}
@@ -183,15 +180,15 @@
 					<img src={qrCodeDataUrl} alt="QR Code to {clubUrl}" class="h-auto w-full" />
 				{/if}
 			</div>
-			<p class="mt-4 text-center text-lg font-semibold text-slate-700">
-				Scan for more information
-			</p>
-			<p class="mt-2 break-all text-center text-sm text-slate-600">{clubUrl}</p>
+			<p class="mt-4 text-center text-lg font-semibold text-slate-700">Scan for more information</p>
+			<p class="mt-2 text-center text-sm break-all text-slate-600">{clubUrl}</p>
 		</div>
 	</div>
 
 	<!-- Call to Action -->
-	<div class="rounded-xl border-4 border-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 p-8 text-center">
+	<div
+		class="rounded-xl border-4 border-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 p-8 text-center"
+	>
 		<h2 class="mb-4 text-3xl font-black text-slate-900">Everyone Welcome!</h2>
 		<div class="space-y-2 text-lg text-slate-700">
 			<p class="font-semibold">✓ No booking required</p>

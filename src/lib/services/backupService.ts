@@ -91,7 +91,7 @@ export class BackupService {
 	async createFullBackup(type: 'full' | 'manual' = 'full'): Promise<BackupMetadata> {
 		const backupId = this.generateBackupId();
 		const timestamp = new Date();
-		
+
 		const metadata: BackupMetadata = {
 			id: backupId,
 			timestamp,
@@ -106,7 +106,7 @@ export class BackupService {
 		try {
 			// Export all data
 			const backupData = await this.exportAllData();
-			
+
 			// Calculate metadata
 			const serializedData = JSON.stringify(backupData);
 			metadata.size = Buffer.byteLength(serializedData, 'utf8');
@@ -127,7 +127,7 @@ export class BackupService {
 			metadata.status = 'failed';
 			metadata.error = error instanceof Error ? error.message : String(error);
 			this.backups.set(backupId, metadata);
-			
+
 			console.error(`Backup ${backupId} failed:`, error);
 			throw new Error(`Backup failed: ${metadata.error}`);
 		}
@@ -162,7 +162,7 @@ export class BackupService {
 
 			// Load backup data
 			const backupData = await this.loadBackupData(options.backupId);
-			
+
 			// Validate backup data if requested
 			if (options.validateData) {
 				const validation = await this.validateBackupData(backupData);
@@ -189,9 +189,11 @@ export class BackupService {
 			}
 
 			result.success = result.errors.length === 0;
-			
+
 			if (result.success) {
-				console.log(`Successfully restored ${result.recordsRestored} records from backup ${options.backupId}`);
+				console.log(
+					`Successfully restored ${result.recordsRestored} records from backup ${options.backupId}`
+				);
 			} else {
 				console.warn(`Restore completed with errors: ${result.errors.join('; ')}`);
 			}
@@ -210,7 +212,7 @@ export class BackupService {
 	 */
 	async exportData(format: 'json' | 'sql' = 'json'): Promise<string> {
 		const data = await this.exportAllData();
-		
+
 		if (format === 'json') {
 			return JSON.stringify(data, null, 2);
 		} else {
@@ -221,7 +223,10 @@ export class BackupService {
 	/**
 	 * Import data from external backup
 	 */
-	async importData(data: string, format: 'json' | 'sql' = 'json'): Promise<{
+	async importData(
+		data: string,
+		format: 'json' | 'sql' = 'json'
+	): Promise<{
 		success: boolean;
 		recordsImported: number;
 		errors: string[];
@@ -234,7 +239,7 @@ export class BackupService {
 
 		try {
 			let backupData: BackupData;
-			
+
 			if (format === 'json') {
 				backupData = JSON.parse(data);
 			} else {
@@ -249,13 +254,21 @@ export class BackupService {
 			}
 
 			// Import data
-			const tables = ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'];
+			const tables = [
+				'clubs',
+				'meeting_points',
+				'meeting_schedules',
+				'walking_routes',
+				'route_points'
+			];
 			for (const table of tables) {
 				try {
 					const recordsImported = await this.restoreTable(table, backupData);
 					result.recordsImported += recordsImported;
 				} catch (error) {
-					result.errors.push(`Failed to import ${table}: ${error instanceof Error ? error.message : String(error)}`);
+					result.errors.push(
+						`Failed to import ${table}: ${error instanceof Error ? error.message : String(error)}`
+					);
 				}
 			}
 
@@ -284,7 +297,13 @@ export class BackupService {
 
 		// Check table integrity
 		await this.runHealthCheck(checks, 'Table Integrity', async () => {
-			const tables = ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'];
+			const tables = [
+				'clubs',
+				'meeting_points',
+				'meeting_schedules',
+				'walking_routes',
+				'route_points'
+			];
 			for (const table of tables) {
 				const result = await this.db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first();
 				if (!result) {
@@ -304,12 +323,16 @@ export class BackupService {
 		// Check data consistency
 		await this.runHealthCheck(checks, 'Data Consistency', async () => {
 			// Check for orphaned records
-			const orphanedMeetingPoints = await this.db.prepare(`
+			const orphanedMeetingPoints = await this.db
+				.prepare(
+					`
 				SELECT COUNT(*) as count FROM meeting_points mp 
 				LEFT JOIN clubs c ON mp.club_id = c.id 
 				WHERE c.id IS NULL
-			`).first();
-			
+			`
+				)
+				.first();
+
 			if (orphanedMeetingPoints && (orphanedMeetingPoints as any).count > 0) {
 				throw new Error(`Found ${(orphanedMeetingPoints as any).count} orphaned meeting points`);
 			}
@@ -318,9 +341,9 @@ export class BackupService {
 		// Check backup availability
 		await this.runHealthCheck(checks, 'Backup Availability', async () => {
 			const recentBackups = Array.from(this.backups.values())
-				.filter(b => b.status === 'completed')
-				.filter(b => Date.now() - b.timestamp.getTime() < 7 * 24 * 60 * 60 * 1000); // Last 7 days
-			
+				.filter((b) => b.status === 'completed')
+				.filter((b) => Date.now() - b.timestamp.getTime() < 7 * 24 * 60 * 60 * 1000); // Last 7 days
+
 			if (recentBackups.length === 0) {
 				throw new Error('No recent backups available');
 			}
@@ -329,9 +352,9 @@ export class BackupService {
 		// Calculate summary
 		const summary = {
 			totalChecks: checks.length,
-			passed: checks.filter(c => c.status === 'pass').length,
-			failed: checks.filter(c => c.status === 'fail').length,
-			warnings: checks.filter(c => c.status === 'warn').length
+			passed: checks.filter((c) => c.status === 'pass').length,
+			failed: checks.filter((c) => c.status === 'fail').length,
+			warnings: checks.filter((c) => c.status === 'warn').length
 		};
 
 		const healthy = summary.failed === 0;
@@ -347,8 +370,9 @@ export class BackupService {
 	 * Get backup history
 	 */
 	getBackupHistory(): BackupMetadata[] {
-		return Array.from(this.backups.values())
-			.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+		return Array.from(this.backups.values()).sort(
+			(a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+		);
 	}
 
 	/**
@@ -381,13 +405,19 @@ export class BackupService {
 		successRate: number;
 	} {
 		const backups = Array.from(this.backups.values());
-		const completedBackups = backups.filter(b => b.status === 'completed');
-		
+		const completedBackups = backups.filter((b) => b.status === 'completed');
+
 		return {
 			totalBackups: backups.length,
 			totalSize: completedBackups.reduce((sum, b) => sum + b.size, 0),
-			oldestBackup: backups.length > 0 ? new Date(Math.min(...backups.map(b => b.timestamp.getTime()))) : undefined,
-			newestBackup: backups.length > 0 ? new Date(Math.max(...backups.map(b => b.timestamp.getTime()))) : undefined,
+			oldestBackup:
+				backups.length > 0
+					? new Date(Math.min(...backups.map((b) => b.timestamp.getTime())))
+					: undefined,
+			newestBackup:
+				backups.length > 0
+					? new Date(Math.max(...backups.map((b) => b.timestamp.getTime())))
+					: undefined,
 			successRate: backups.length > 0 ? (completedBackups.length / backups.length) * 100 : 0
 		};
 	}
@@ -452,13 +482,18 @@ export class BackupService {
 			try {
 				const columns = Object.keys(record);
 				const placeholders = columns.map(() => '?').join(', ');
-				const values = columns.map(col => record[col]);
-				
-				await this.db.prepare(`
+				const values = columns.map((col) => record[col]);
+
+				await this.db
+					.prepare(
+						`
 					INSERT INTO ${table} (${columns.join(', ')}) 
 					VALUES (${placeholders})
-				`).bind(...values).run();
-				
+				`
+					)
+					.bind(...values)
+					.run();
+
 				recordsRestored++;
 			} catch (error) {
 				console.warn(`Failed to restore record in ${table}:`, error);
@@ -473,12 +508,18 @@ export class BackupService {
 	 */
 	private getTableData(table: string, backupData: BackupData): any[] {
 		switch (table) {
-			case 'clubs': return backupData.clubs;
-			case 'meeting_points': return backupData.meetingPoints;
-			case 'meeting_schedules': return backupData.meetingSchedules;
-			case 'walking_routes': return backupData.walkingRoutes;
-			case 'route_points': return backupData.routePoints;
-			default: return [];
+			case 'clubs':
+				return backupData.clubs;
+			case 'meeting_points':
+				return backupData.meetingPoints;
+			case 'meeting_schedules':
+				return backupData.meetingSchedules;
+			case 'walking_routes':
+				return backupData.walkingRoutes;
+			case 'route_points':
+				return backupData.routePoints;
+			default:
+				return [];
 		}
 	}
 
@@ -492,7 +533,13 @@ export class BackupService {
 		const errors: string[] = [];
 
 		// Check required tables
-		const requiredTables = ['clubs', 'meetingPoints', 'meetingSchedules', 'walkingRoutes', 'routePoints'];
+		const requiredTables = [
+			'clubs',
+			'meetingPoints',
+			'meetingSchedules',
+			'walkingRoutes',
+			'routePoints'
+		];
 		for (const table of requiredTables) {
 			if (!backupData[table as keyof BackupData]) {
 				errors.push(`Missing table data: ${table}`);
@@ -502,7 +549,9 @@ export class BackupService {
 		// Check data consistency
 		if (backupData.clubs && backupData.meetingPoints) {
 			const clubIds = new Set(backupData.clubs.map((c: any) => c.id));
-			const orphanedMeetingPoints = backupData.meetingPoints.filter((mp: any) => !clubIds.has(mp.club_id));
+			const orphanedMeetingPoints = backupData.meetingPoints.filter(
+				(mp: any) => !clubIds.has(mp.club_id)
+			);
 			if (orphanedMeetingPoints.length > 0) {
 				errors.push(`Found ${orphanedMeetingPoints.length} orphaned meeting points`);
 			}
@@ -576,8 +625,9 @@ export class BackupService {
 	 * Clean up old backups
 	 */
 	private async cleanupOldBackups(): Promise<void> {
-		const backups = Array.from(this.backups.values())
-			.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+		const backups = Array.from(this.backups.values()).sort(
+			(a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+		);
 
 		if (backups.length > this.config.maxBackups) {
 			const toDelete = backups.slice(this.config.maxBackups);
@@ -608,7 +658,7 @@ export class BackupService {
 		let hash = 0;
 		for (let i = 0; i < data.length; i++) {
 			const char = data.charCodeAt(i);
-			hash = ((hash << 5) - hash) + char;
+			hash = (hash << 5) - hash + char;
 			hash = hash & hash; // Convert to 32-bit integer
 		}
 		return Math.abs(hash).toString(16);
@@ -618,11 +668,13 @@ export class BackupService {
 	 * Count total records in backup data
 	 */
 	private countRecords(backupData: BackupData): number {
-		return (backupData.clubs?.length || 0) +
-			   (backupData.meetingPoints?.length || 0) +
-			   (backupData.meetingSchedules?.length || 0) +
-			   (backupData.walkingRoutes?.length || 0) +
-			   (backupData.routePoints?.length || 0);
+		return (
+			(backupData.clubs?.length || 0) +
+			(backupData.meetingPoints?.length || 0) +
+			(backupData.meetingSchedules?.length || 0) +
+			(backupData.walkingRoutes?.length || 0) +
+			(backupData.routePoints?.length || 0)
+		);
 	}
 
 	/**

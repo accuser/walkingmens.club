@@ -33,11 +33,13 @@ export function initializeClubService(platform?: App.Platform): void {
 	// Only initialize if we have a platform and haven't initialized yet
 	if (platform && !clubService) {
 		// Dynamically import to avoid circular dependencies and ensure it only loads when needed
-		import('../database/resilientClubService').then(({ ResilientClubService }) => {
-			clubService = new ResilientClubService(platform, staticFallbackProvider);
-		}).catch(error => {
-			console.warn('Failed to initialize database service, using static fallback:', error);
-		});
+		import('../database/resilientClubService')
+			.then(({ ResilientClubService }) => {
+				clubService = new ResilientClubService(platform, staticFallbackProvider);
+			})
+			.catch((error) => {
+				console.warn('Failed to initialize database service, using static fallback:', error);
+			});
 	}
 }
 
@@ -116,7 +118,10 @@ export async function isHostnameConfigured(hostname: string): Promise<boolean> {
 		try {
 			return await clubService.isHostnameConfigured(hostname);
 		} catch (error) {
-			console.warn('Database service failed for hostname check, falling back to static data:', error);
+			console.warn(
+				'Database service failed for hostname check, falling back to static data:',
+				error
+			);
 		}
 	}
 
@@ -131,7 +136,7 @@ export async function getServiceHealthStatus() {
 	if (clubService && typeof clubService.getHealthStatus === 'function') {
 		return await clubService.getHealthStatus();
 	}
-	
+
 	return {
 		database: false,
 		fallback: true,
@@ -142,4 +147,3 @@ export async function getServiceHealthStatus() {
 
 export type { ClubConfig, MeetingPoint, MeetingSchedule, RoutePoint, WalkingRoute } from './types';
 export { delabole };
-

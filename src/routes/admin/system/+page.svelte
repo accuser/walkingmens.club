@@ -2,19 +2,19 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import SystemMonitoring from '$lib/components/admin/SystemMonitoring.svelte';
-	
+
 	let { data } = $props();
-	
+
 	let systemHealth = $state(null);
 	let subdomainHealth = $state(null);
 	let backupStatus = $state(null);
 	let loading = $state(true);
 	let error = $state(null);
 	let lastRefresh = $state(null);
-	
+
 	// Auto-refresh interval (30 seconds)
 	let refreshInterval = null;
-	
+
 	async function fetchSystemHealth() {
 		try {
 			const response = await fetch('/api/health');
@@ -27,7 +27,7 @@
 			error = err.message;
 		}
 	}
-	
+
 	async function fetchSubdomainHealth() {
 		try {
 			const response = await fetch('/api/admin/subdomains/health');
@@ -40,7 +40,7 @@
 			error = err.message;
 		}
 	}
-	
+
 	async function fetchBackupStatus() {
 		try {
 			const response = await fetch('/api/admin/backup/status');
@@ -53,41 +53,37 @@
 			// Don't set error here as backup might not be critical
 		}
 	}
-	
+
 	async function refreshData() {
 		loading = true;
 		error = null;
-		
-		await Promise.all([
-			fetchSystemHealth(),
-			fetchSubdomainHealth(),
-			fetchBackupStatus()
-		]);
-		
+
+		await Promise.all([fetchSystemHealth(), fetchSubdomainHealth(), fetchBackupStatus()]);
+
 		loading = false;
 		lastRefresh = new Date();
 	}
-	
+
 	function startAutoRefresh() {
 		refreshInterval = setInterval(refreshData, 30000); // 30 seconds
 	}
-	
+
 	function stopAutoRefresh() {
 		if (refreshInterval) {
 			clearInterval(refreshInterval);
 			refreshInterval = null;
 		}
 	}
-	
+
 	onMount(() => {
 		refreshData();
 		startAutoRefresh();
-		
+
 		return () => {
 			stopAutoRefresh();
 		};
 	});
-	
+
 	function getStatusColor(status) {
 		switch (status) {
 			case 'healthy':
@@ -102,11 +98,11 @@
 				return 'text-gray-600 bg-gray-100';
 		}
 	}
-	
+
 	function formatTimestamp(timestamp) {
 		return new Date(timestamp).toLocaleString();
 	}
-	
+
 	function formatDuration(ms) {
 		if (ms < 1000) return `${ms}ms`;
 		return `${(ms / 1000).toFixed(1)}s`;
@@ -134,7 +130,8 @@
 
 	{#if error}
 		<div class="error-banner">
-			<strong>Error:</strong> {error}
+			<strong>Error:</strong>
+			{error}
 		</div>
 	{/if}
 
@@ -185,7 +182,11 @@
 					<div class="health-card">
 						<div class="health-header">
 							<h3>Cache</h3>
-							<span class="status-badge {systemHealth.services.cache.enabled ? 'text-green-600 bg-green-100' : 'text-gray-600 bg-gray-100'}">
+							<span
+								class="status-badge {systemHealth.services.cache.enabled
+									? 'bg-green-100 text-green-600'
+									: 'bg-gray-100 text-gray-600'}"
+							>
 								{systemHealth.services.cache.enabled ? 'enabled' : 'disabled'}
 							</span>
 						</div>
@@ -204,7 +205,7 @@
 		{#if subdomainHealth}
 			<div class="section">
 				<h2>Subdomain Health</h2>
-				
+
 				<!-- Summary -->
 				<div class="summary-grid">
 					<div class="summary-card">
@@ -245,7 +246,7 @@
 									{/if}
 								</div>
 							</div>
-							
+
 							{#if subdomain.issues.length > 0}
 								<div class="issues">
 									<h5>Issues:</h5>
@@ -256,7 +257,7 @@
 									</ul>
 								</div>
 							{/if}
-							
+
 							<div class="subdomain-footer">
 								<span class="last-checked">
 									Last checked: {formatTimestamp(subdomain.lastChecked)}
@@ -275,7 +276,7 @@
 		{#if backupStatus}
 			<div class="section">
 				<h2>Backup & Recovery</h2>
-				
+
 				<div class="backup-grid">
 					<div class="backup-card">
 						<div class="backup-header">
@@ -286,15 +287,24 @@
 						</div>
 						<div class="backup-details">
 							{#if backupStatus.backup.lastBackup}
-								<p><strong>Last Backup:</strong> {formatTimestamp(backupStatus.backup.lastBackup)}</p>
+								<p>
+									<strong>Last Backup:</strong>
+									{formatTimestamp(backupStatus.backup.lastBackup)}
+								</p>
 							{/if}
 							{#if backupStatus.backup.backupSize}
-								<p><strong>Size:</strong> {(backupStatus.backup.backupSize / (1024 * 1024)).toFixed(1)} MB</p>
+								<p>
+									<strong>Size:</strong>
+									{(backupStatus.backup.backupSize / (1024 * 1024)).toFixed(1)} MB
+								</p>
 							{/if}
 							<p><strong>Location:</strong> {backupStatus.backup.backupLocation}</p>
 							<p><strong>Retention:</strong> {backupStatus.backup.retentionPeriod}</p>
 							{#if backupStatus.backup.nextScheduledBackup}
-								<p><strong>Next Backup:</strong> {formatTimestamp(backupStatus.backup.nextScheduledBackup)}</p>
+								<p>
+									<strong>Next Backup:</strong>
+									{formatTimestamp(backupStatus.backup.nextScheduledBackup)}
+								</p>
 							{/if}
 						</div>
 						{#if backupStatus.backup.issues.length > 0}
@@ -312,12 +322,19 @@
 					<div class="backup-card">
 						<div class="backup-header">
 							<h3>Recovery Status</h3>
-							<span class="status-badge {backupStatus.recovery.testStatus === 'passed' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'}">
+							<span
+								class="status-badge {backupStatus.recovery.testStatus === 'passed'
+									? 'bg-green-100 text-green-600'
+									: 'bg-red-100 text-red-600'}"
+							>
 								{backupStatus.recovery.testStatus}
 							</span>
 						</div>
 						<div class="backup-details">
-							<p><strong>Last Test:</strong> {formatTimestamp(backupStatus.recovery.lastRecoveryTest)}</p>
+							<p>
+								<strong>Last Test:</strong>
+								{formatTimestamp(backupStatus.recovery.lastRecoveryTest)}
+							</p>
 							<p><strong>Test Duration:</strong> {backupStatus.recovery.lastTestDuration}</p>
 							<p><strong>RTO:</strong> {backupStatus.recovery.recoveryTimeObjective}</p>
 							<p><strong>RPO:</strong> {backupStatus.recovery.recoveryPointObjective}</p>
@@ -421,8 +438,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	.section {

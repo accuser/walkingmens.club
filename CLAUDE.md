@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **multi-tenant Walking Men's Club application** built with SvelteKit 2 and Svelte 5, configured for deployment to Cloudflare via `@sveltejs/adapter-cloudflare`.
 
 **Purpose**: Provide local men's walking groups with simple informational websites showing:
+
 - Meeting time and location
 - Walking route maps
 - Club-specific information
@@ -14,6 +15,7 @@ This is a **multi-tenant Walking Men's Club application** built with SvelteKit 2
 **Multi-tenancy**: Each club is distinguished by subdomain (e.g., `delabole.walkingmens.club`, `someothertown.walkingmens.club`). The application serves different content based on the hostname.
 
 **Technology stack**:
+
 - **Svelte 5** with the new runes API (`$props()`, `$state()`, etc.)
 - **TypeScript** with strict mode enabled
 - **Tailwind CSS v4** (via Vite plugin) for styling
@@ -62,20 +64,22 @@ This project uses **Vitest** with two distinct test configurations:
 2. **Client tests** (`*.svelte.{test,spec}.{js,ts}`): Run in browser mode using Playwright/Chromium for testing Svelte components with DOM access
 
 When writing tests:
+
 - Use `*.spec.ts` or `*.test.ts` for server-side/Node tests (utilities, API logic, etc.)
 - Use `*.svelte.spec.ts` or `*.svelte.test.ts` for Svelte component tests
 - Component tests use `render()` from `vitest-browser-svelte` and `page` from `@vitest/browser/context`
 - All tests require assertions (`expect.requireAssertions: true` in config)
 
 Example component test:
+
 ```typescript
 import { page } from '@vitest/browser/context';
 import { render } from 'vitest-browser-svelte';
 import MyComponent from './MyComponent.svelte';
 
 it('should render', async () => {
-  render(MyComponent);
-  await expect.element(page.getByRole('heading')).toBeInTheDocument();
+	render(MyComponent);
+	await expect.element(page.getByRole('heading')).toBeInTheDocument();
 });
 ```
 
@@ -111,6 +115,7 @@ src/
 ## Svelte 5 Runes
 
 This project uses Svelte 5 with the runes API. Key differences from Svelte 4:
+
 - Use `let { propName } = $props()` instead of `export let propName`
 - Use `$state()` for reactive state instead of `let` declarations
 - Use `{@render children()}` instead of `<slot />`
@@ -142,6 +147,7 @@ The app uses **hostname-based routing** to serve different content for each Walk
 3. **Data structure**: Club configurations are stored in `src/lib/clubs/` (e.g., `delabole.ts`, `index.ts`)
 
 **Routing behavior**:
+
 - **Main domain** (`walkingmens.club` or `localhost`): Shows landing page with all clubs
   - Displays club suggestions with geolocation-based sorting
   - Users can enable location to see clubs sorted by distance (in miles)
@@ -151,11 +157,13 @@ The app uses **hostname-based routing** to serve different content for each Walk
   - Returns 404 for unknown subdomains
 
 **Landing Page Features**:
+
 - Introduction to Walking Men's Clubs purpose
 - Optional geolocation to sort clubs by distance from user
 - Distance displayed in miles (or feet for very close clubs)
 - Grid of club cards showing key information
 
 **First club**: Delabole
+
 - Meeting: Sunday mornings at 10:00
 - Route: Footpath around Delabole Slate Quarry and surrounding fields

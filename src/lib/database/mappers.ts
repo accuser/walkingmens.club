@@ -2,7 +2,13 @@
  * Mapping functions to transform between database entities and ClubConfig objects
  */
 
-import type { ClubConfig, MeetingPoint, MeetingSchedule, WalkingRoute, RoutePoint } from '../clubs/types';
+import type {
+	ClubConfig,
+	MeetingPoint,
+	MeetingSchedule,
+	WalkingRoute,
+	RoutePoint
+} from '../clubs/types';
 import type {
 	ClubEntity,
 	MeetingPointEntity,
@@ -40,7 +46,7 @@ export function mapEntitiesToClubConfig(entities: ClubWithRelationsEntity): Club
 	// Map route points (sorted by sequence_order)
 	const mappedRoutePoints: RoutePoint[] = routePoints
 		.sort((a, b) => a.sequence_order - b.sequence_order)
-		.map(point => ({
+		.map((point) => ({
 			lat: point.lat,
 			lng: point.lng
 		}));
@@ -65,10 +71,13 @@ export function mapEntitiesToClubConfig(entities: ClubWithRelationsEntity): Club
 		schedule: mappedSchedule,
 		route: mappedRoute,
 		description: club.description || undefined,
-		contact: (club.contact_email || club.contact_phone) ? {
-			email: club.contact_email || undefined,
-			phone: club.contact_phone || undefined
-		} : undefined
+		contact:
+			club.contact_email || club.contact_phone
+				? {
+						email: club.contact_email || undefined,
+						phone: club.contact_phone || undefined
+					}
+				: undefined
 	};
 
 	return clubConfig;

@@ -80,9 +80,7 @@ const CACHE_STRATEGIES = {
  * Compression and caching service
  */
 export class CompressionService {
-	constructor(
-		private compressionOptions: CompressionOptions = DEFAULT_COMPRESSION_OPTIONS
-	) {}
+	constructor(private compressionOptions: CompressionOptions = DEFAULT_COMPRESSION_OPTIONS) {}
 
 	/**
 	 * Compress response data if applicable
@@ -102,9 +100,11 @@ export class CompressionService {
 		const originalSize = originalData.length;
 
 		// Check if compression is enabled and data meets threshold
-		if (!this.compressionOptions.enabled || 
+		if (
+			!this.compressionOptions.enabled ||
 			originalSize < this.compressionOptions.threshold ||
-			!this.shouldCompress(contentType)) {
+			!this.shouldCompress(contentType)
+		) {
 			return {
 				data: originalData,
 				originalSize,
@@ -116,7 +116,7 @@ export class CompressionService {
 		try {
 			// Determine best compression method based on Accept-Encoding header
 			const encoding = this.getBestEncoding(acceptEncoding);
-			
+
 			if (!encoding) {
 				return {
 					data: originalData,
@@ -127,16 +127,16 @@ export class CompressionService {
 			}
 
 			let compressedData: Buffer;
-			
+
 			switch (encoding) {
 				case 'gzip':
-					compressedData = await gzipAsync(originalData, { 
-						level: this.compressionOptions.level 
+					compressedData = await gzipAsync(originalData, {
+						level: this.compressionOptions.level
 					});
 					break;
 				case 'deflate':
-					compressedData = await deflateAsync(originalData, { 
-						level: this.compressionOptions.level 
+					compressedData = await deflateAsync(originalData, {
+						level: this.compressionOptions.level
 					});
 					break;
 				default:
@@ -191,7 +191,7 @@ export class CompressionService {
 
 		// Cache-Control header
 		const cacheControlParts: string[] = [];
-		
+
 		if (options.public) {
 			cacheControlParts.push('public');
 		} else {
@@ -232,7 +232,7 @@ export class CompressionService {
 	 */
 	generateClubDataHeaders(lastModified?: Date): Record<string, string> {
 		const headers = this.generateCacheHeaders('clubData');
-		
+
 		if (lastModified) {
 			headers['Last-Modified'] = lastModified.toUTCString();
 		}
@@ -240,7 +240,7 @@ export class CompressionService {
 		// Add specific headers for club data
 		headers['X-Content-Type-Options'] = 'nosniff';
 		headers['X-Frame-Options'] = 'DENY';
-		
+
 		return headers;
 	}
 
@@ -250,11 +250,11 @@ export class CompressionService {
 	generateApiHeaders(cacheable: boolean = true): Record<string, string> {
 		const strategy = cacheable ? 'api' : 'dynamic';
 		const headers = this.generateCacheHeaders(strategy);
-		
+
 		// Add API-specific headers
 		headers['Content-Type'] = 'application/json; charset=utf-8';
 		headers['X-Content-Type-Options'] = 'nosniff';
-		
+
 		return headers;
 	}
 
@@ -263,14 +263,14 @@ export class CompressionService {
 	 */
 	generateStaticAssetHeaders(contentType: string): Record<string, string> {
 		const headers = this.generateCacheHeaders('static');
-		
+
 		headers['Content-Type'] = contentType;
-		
+
 		// Add security headers for static assets
 		if (contentType.startsWith('image/')) {
 			headers['X-Content-Type-Options'] = 'nosniff';
 		}
-		
+
 		return headers;
 	}
 
@@ -310,17 +310,20 @@ export class CompressionService {
 	 * Get best compression encoding based on Accept-Encoding header
 	 */
 	private getBestEncoding(acceptEncoding: string): string | null {
-		const encodings = acceptEncoding.toLowerCase().split(',').map(e => e.trim());
-		
+		const encodings = acceptEncoding
+			.toLowerCase()
+			.split(',')
+			.map((e) => e.trim());
+
 		// Prefer gzip over deflate
-		if (encodings.some(e => e.includes('gzip'))) {
+		if (encodings.some((e) => e.includes('gzip'))) {
 			return 'gzip';
 		}
-		
-		if (encodings.some(e => e.includes('deflate'))) {
+
+		if (encodings.some((e) => e.includes('deflate'))) {
 			return 'deflate';
 		}
-		
+
 		return null;
 	}
 
@@ -338,11 +341,13 @@ export class CompressionService {
  * Middleware function for SvelteKit to add compression and caching
  */
 export function createCompressionMiddleware(options?: Partial<CompressionOptions>) {
-	const service = new CompressionService(options ? { ...DEFAULT_COMPRESSION_OPTIONS, ...options } : undefined);
-	
+	const service = new CompressionService(
+		options ? { ...DEFAULT_COMPRESSION_OPTIONS, ...options } : undefined
+	);
+
 	return {
 		service,
-		
+
 		/**
 		 * Handle response compression and caching for SvelteKit
 		 */
@@ -353,39 +358,39 @@ export function createCompressionMiddleware(options?: Partial<CompressionOptions
 		): Promise<Response> {
 			const acceptEncoding = request.headers.get('accept-encoding') || '';
 			const contentType = response.headers.get('content-type') || 'text/html';
-			
+
 			// Get response body
 			const originalBody = await response.text();
-			
+
 			// Compress if applicable
 			const compressionResult = await service.compressResponse(
 				originalBody,
 				acceptEncoding,
 				contentType
 			);
-			
+
 			// Generate cache headers
 			const cacheHeaders = service.generateCacheHeaders(cacheStrategy);
-			
+
 			// Create new response with compression and caching
 			const headers = new Headers(response.headers);
-			
+
 			// Add compression headers
 			if (compressionResult.encoding) {
 				headers.set('Content-Encoding', compressionResult.encoding);
 			}
 			headers.set('Content-Length', compressionResult.data.length.toString());
-			
+
 			// Add cache headers
 			Object.entries(cacheHeaders).forEach(([key, value]) => {
 				headers.set(key, value);
 			});
-			
+
 			// Add performance headers
 			headers.set('X-Compression-Ratio', compressionResult.compressionRatio.toFixed(2));
 			headers.set('X-Original-Size', compressionResult.originalSize.toString());
 			headers.set('X-Compressed-Size', compressionResult.compressedSize.toString());
-			
+
 			return new Response(compressionResult.data, {
 				status: response.status,
 				statusText: response.statusText,

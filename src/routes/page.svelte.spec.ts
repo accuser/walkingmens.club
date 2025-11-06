@@ -15,7 +15,7 @@ describe('/+page.svelte', () => {
 
 		const heading = page.getByRole('heading', { level: 1 });
 		await expect.element(heading).toBeInTheDocument();
-		await expect.element(heading).toHaveTextContent('Delabole Walking Men\'s Club');
+		await expect.element(heading).toHaveTextContent("Delabole Walking Men's Club");
 	});
 
 	it('should display meeting schedule', async () => {

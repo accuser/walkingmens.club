@@ -84,13 +84,13 @@ export class MemoryClubCacheService implements ClubCacheService {
 	 */
 	async get(key: string): Promise<ClubConfig | null> {
 		const startTime = Date.now();
-		
+
 		if (!this.config.enabled) {
 			return null;
 		}
 
 		const entry = this.cache.get(key);
-		
+
 		if (!entry) {
 			this.stats.misses++;
 			const duration = Date.now() - startTime;
@@ -127,7 +127,7 @@ export class MemoryClubCacheService implements ClubCacheService {
 			hit: true,
 			size: JSON.stringify(entry.data).length
 		});
-		
+
 		return entry.data;
 	}
 
@@ -136,7 +136,7 @@ export class MemoryClubCacheService implements ClubCacheService {
 	 */
 	async set(key: string, club: ClubConfig, ttl?: number): Promise<void> {
 		const startTime = Date.now();
-		
+
 		if (!this.config.enabled) {
 			return;
 		}
@@ -153,7 +153,7 @@ export class MemoryClubCacheService implements ClubCacheService {
 		};
 
 		this.cache.set(key, entry);
-		
+
 		const duration = Date.now() - startTime;
 		performanceMonitor.recordCacheOperation({
 			operation: 'set',
@@ -189,7 +189,7 @@ export class MemoryClubCacheService implements ClubCacheService {
 			return;
 		}
 
-		const promises = clubs.map(club => {
+		const promises = clubs.map((club) => {
 			// Cache by hostname (most common lookup)
 			const hostnameKey = this.generateHostnameKey(club.hostname);
 			return this.set(hostnameKey, club);
@@ -267,7 +267,7 @@ export class MemoryClubCacheService implements ClubCacheService {
 			}
 		}
 
-		keysToDelete.forEach(key => this.cache.delete(key));
+		keysToDelete.forEach((key) => this.cache.delete(key));
 	}
 
 	/**
@@ -275,8 +275,9 @@ export class MemoryClubCacheService implements ClubCacheService {
 	 */
 	private evictOldestEntries(): void {
 		const entriesToRemove = Math.max(1, Math.floor(this.config.maxSize * 0.1)); // Remove 10%
-		const sortedEntries = Array.from(this.cache.entries())
-			.sort(([, a], [, b]) => a.timestamp - b.timestamp);
+		const sortedEntries = Array.from(this.cache.entries()).sort(
+			([, a], [, b]) => a.timestamp - b.timestamp
+		);
 
 		for (let i = 0; i < entriesToRemove && i < sortedEntries.length; i++) {
 			this.cache.delete(sortedEntries[i][0]);
@@ -317,7 +318,7 @@ export class CloudflareKVCacheService implements ClubCacheService {
 
 		try {
 			const cached = await this.kv.get(key, 'json');
-			
+
 			if (!cached) {
 				this.stats.misses++;
 				return null;
@@ -378,7 +379,7 @@ export class CloudflareKVCacheService implements ClubCacheService {
 			return;
 		}
 
-		const promises = clubs.map(club => {
+		const promises = clubs.map((club) => {
 			const hostnameKey = this.generateHostnameKey(club.hostname);
 			return this.set(hostnameKey, club);
 		});
