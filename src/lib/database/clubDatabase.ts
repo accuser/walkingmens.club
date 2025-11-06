@@ -322,7 +322,7 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 				.bind(id)
 				.run();
 
-			if (result.changes === 0) {
+			if (result.meta.changes === 0) {
 				throw new Error(`Failed to delete club with ID ${id}`);
 			}
 		} catch (error) {
@@ -349,11 +349,32 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 	}
 
 	/**
-	 * Migrate static data to database (placeholder for migration task)
+	 * Migrate static data to database
 	 */
 	async migrateStaticData(): Promise<void> {
-		// This will be implemented in the migration task
-		throw new Error('Migration functionality not yet implemented');
+		// Import static clubs data
+		const { getStaticClubs } = await import('../clubs/index');
+		const staticClubs = getStaticClubs();
+
+		if (staticClubs.length === 0) {
+			console.log('No static clubs found to migrate');
+			return;
+		}
+
+		// Import migration service
+		const { ClubMigrationService } = await import('./migration');
+		const migrationService = new ClubMigrationService(this.db);
+
+		// Perform migration with backup
+		const result = await migrationService.migrateStaticData(staticClubs, {
+			createBackup: true
+		});
+
+		if (!result.success) {
+			throw new Error(`Migration failed: ${result.errors.join('; ')}`);
+		}
+
+		console.log(`Migration completed successfully. Migrated clubs: ${result.migratedClubs.join(', ')}`);
 	}
 
 	/**

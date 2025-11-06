@@ -8,13 +8,13 @@ export const load: PageServerLoad = async ({ url }) => {
 	// For main domain or localhost, show landing page with all clubs
 	if (hostname === 'walkingmens.club' || hostname === 'localhost') {
 		return {
-			clubs: getAllClubs(),
+			clubs: await getAllClubs(),
 			club: null
 		};
 	}
 
 	// For subdomains, show specific club
-	const club = getClubByHostname(hostname);
+	const club = await getClubByHostname(hostname);
 
 	if (!club) {
 		throw error(404, {

@@ -13,7 +13,10 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"migrate:clubs": "tsx scripts/migrate-clubs.ts",
+		"migrate:clubs:dry-run": "tsx scripts/migrate-clubs.ts --dry-run",
+		"migrate:clubs:validate": "tsx scripts/migrate-clubs.ts --validate"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
@@ -39,6 +42,7 @@
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"tailwindcss": "^4.1.14",
+		"tsx": "^4.19.2",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.46.1",
 		"vite": "^7.1.10",

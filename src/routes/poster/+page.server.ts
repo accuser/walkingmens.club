@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		});
 	}
 
-	const club = getClubByHostname(hostname);
+	const club = await getClubByHostname(hostname);
 
 	if (!club) {
 		throw error(404, {
