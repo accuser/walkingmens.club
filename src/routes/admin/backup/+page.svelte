@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 
 	let backupData = $state(null);
 	let healthData = $state(null);
@@ -379,7 +378,7 @@
 					<div class="health-alerts">
 						<h3>Active Alerts</h3>
 						<div class="alerts-list">
-							{#each healthData.alerts as alert}
+							{#each healthData.alerts as alert, index (index)}
 								<div class="alert-item {getAlertClass(alert.type)}">
 									<div class="alert-content">
 										<div class="alert-message">{alert.message}</div>
@@ -398,7 +397,7 @@
 				<div class="health-details">
 					<h3>Health Check Details</h3>
 					<div class="health-checks">
-						{#each healthData.database.checks as check}
+						{#each healthData.database.checks as check, index (index)}
 							<div class="health-check {getHealthStatusClass(check.status)}">
 								<div class="check-name">{check.name}</div>
 								<div class="check-status">{check.status}</div>
@@ -455,7 +454,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{#each backupData.history as backup}
+								{#each backupData.history as backup (backup.id)}
 									<tr>
 										<td class="backup-id">{backup.id}</td>
 										<td class="backup-type">{backup.type}</td>
@@ -525,7 +524,7 @@
 				<div class="table-selection">
 					<p><strong>Tables to restore (leave empty for all):</strong></p>
 					<div class="table-checkboxes">
-						{#each ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'] as table}
+						{#each ['clubs', 'meeting_points', 'meeting_schedules', 'walking_routes', 'route_points'] as table (table)}
 							<label class="checkbox-label">
 								<input type="checkbox" bind:group={restoreOptions.tables} value={table} />
 								{table}

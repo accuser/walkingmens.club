@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ platform, request }) => {
 /**
  * Perform additional system health checks
  */
-async function performSystemHealthChecks(db: any): Promise<{
+async function performSystemHealthChecks(db: unknown): Promise<{
 	healthy: boolean;
 	checks: Array<{
 		name: string;
@@ -155,7 +155,7 @@ async function performSystemHealthChecks(db: any): Promise<{
 		];
 		for (const table of tables) {
 			const result = await db.prepare(`SELECT COUNT(*) as count FROM ${table}`).first();
-			const count = (result as any)?.count || 0;
+			const count = (result as unknown)?.count || 0;
 
 			checks.push({
 				name: `Table ${table}`,
@@ -202,9 +202,9 @@ async function performSystemHealthChecks(db: any): Promise<{
  * Generate health alerts based on system status
  */
 function generateHealthAlerts(
-	healthResult: any,
-	performanceStats: any,
-	backupStats: any
+	healthResult: { healthy: boolean; checks: Array<{ status: string; name: string }> },
+	performanceStats: { avgResponseTime: number; errorRate: number },
+	backupStats: { successRate: number; oldestBackup?: Date }
 ): Array<{
 	type: 'error' | 'warning' | 'info';
 	message: string;
@@ -216,7 +216,7 @@ function generateHealthAlerts(
 
 	// Database health alerts
 	if (!healthResult.healthy) {
-		const failedChecks = healthResult.checks.filter((c: any) => c.status === 'fail');
+		const failedChecks = healthResult.checks.filter((c) => c.status === 'fail');
 		alerts.push({
 			type: 'error' as const,
 			message: `Database health check failed: ${failedChecks.length} checks failed`,

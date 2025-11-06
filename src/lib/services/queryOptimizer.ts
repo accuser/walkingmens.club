@@ -46,8 +46,11 @@ export class QueryOptimizerService {
 			const planResult = await this.db.prepare(explainQuery).all();
 
 			const executionPlan =
-				planResult.results?.map((row: any) => `${row.detail || row.notused || 'N/A'}`).join('\n') ||
-				'No execution plan available';
+				planResult.results
+					?.map(
+						(row: { detail?: string; notused?: string }) => `${row.detail || row.notused || 'N/A'}`
+					)
+					.join('\n') || 'No execution plan available';
 
 			// Analyze the plan for optimization opportunities
 			const analysis = this.analyzeExecutionPlan(executionPlan, query);
@@ -218,8 +221,8 @@ export class QueryOptimizerService {
 
 				tableStats.push({
 					table,
-					rowCount: (countResult as any)?.count || 0,
-					indexCount: (indexResult as any)?.count || 0,
+					rowCount: (countResult as { count?: number })?.count || 0,
+					indexCount: (indexResult as { count?: number })?.count || 0,
 					avgRowSize: 0 // SQLite doesn't provide this easily
 				});
 			}
@@ -308,12 +311,14 @@ export class QueryOptimizerService {
 				)
 				.all();
 
-			return (result.results || []).map((row: any) => ({
-				name: row.name,
-				table: row.tbl_name,
-				columns: this.parseIndexColumns(row.sql),
-				unique: row.sql?.includes('UNIQUE') || false
-			}));
+			return (result.results || []).map(
+				(row: { name: string; tbl_name: string; sql?: string }) => ({
+					name: row.name,
+					table: row.tbl_name,
+					columns: this.parseIndexColumns(row.sql),
+					unique: row.sql?.includes('UNIQUE') || false
+				})
+			);
 		} catch (error) {
 			console.error('Failed to get existing indexes:', error);
 			return [];

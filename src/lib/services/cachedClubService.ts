@@ -260,8 +260,11 @@ export class CachedClubService implements ClubDatabaseService {
 	 * Shutdown the service
 	 */
 	async shutdown(): Promise<void> {
-		if (this.cacheService && typeof (this.cacheService as any).shutdown === 'function') {
-			(this.cacheService as any).shutdown();
+		if (
+			this.cacheService &&
+			typeof (this.cacheService as { shutdown?: () => void }).shutdown === 'function'
+		) {
+			(this.cacheService as { shutdown: () => void }).shutdown();
 		}
 	}
 }

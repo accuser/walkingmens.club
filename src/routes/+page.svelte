@@ -2,6 +2,7 @@
 	import ClubSuggestions from '$lib/components/ClubSuggestions.svelte';
 	import WalkingRouteMap from '$lib/components/WalkingRouteMap.svelte';
 	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 	const { club, clubs } = data;
@@ -194,7 +195,7 @@
 				<!-- Poster Link for Organizers -->
 				<div class="mb-12 text-center">
 					<a
-						href="/poster"
+						href={resolve('/poster')}
 						class="inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-blue-600"
 					>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

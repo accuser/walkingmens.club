@@ -36,7 +36,7 @@ export const GET: RequestHandler = async (event) => {
 		const clubService = new D1ClubDatabaseService(event.platform.env.DB);
 
 		// Try to get club by ID first, then by hostname as fallback
-		let club = await clubService.getClubByHostname(id); // Using hostname as ID for now
+		const club = await clubService.getClubByHostname(id); // Using hostname as ID for now
 
 		if (!club) {
 			return json({ error: 'Club not found' }, { status: 404 });

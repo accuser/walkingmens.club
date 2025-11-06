@@ -13,7 +13,7 @@
  *   --backup-file Path to backup file for rollback
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 // Import club data and migration utilities
@@ -35,11 +35,11 @@ const backupFile = backupFileIndex !== -1 ? args[backupFileIndex + 1] : null;
  * In production, this would be replaced with actual Cloudflare D1 instance
  */
 class MockD1Database implements D1Database {
-	private data = new Map<string, any>();
+	private data = new Map<string, unknown>();
 
-	prepare(query: string) {
+	prepare() {
 		const mockStatement = {
-			bind: (...params: any[]) => mockStatement,
+			bind: () => mockStatement,
 			first: async () => null,
 			all: async () => ({
 				results: [],
@@ -70,7 +70,7 @@ class MockD1Database implements D1Database {
 		return mockStatement;
 	}
 
-	async batch(statements: any[]) {
+	async batch(statements: unknown[]) {
 		return statements.map(() => ({
 			success: true,
 			meta: {
@@ -89,7 +89,7 @@ class MockD1Database implements D1Database {
 		return new ArrayBuffer(0);
 	}
 
-	async exec(query: string) {
+	async exec() {
 		return { count: 0, duration: 0 };
 	}
 }
@@ -105,7 +105,7 @@ function createBackupFile(clubs: ClubConfig[], filename?: string): string {
 	// Ensure backups directory exists
 	const backupsDir = join(process.cwd(), 'backups');
 	if (!existsSync(backupsDir)) {
-		require('fs').mkdirSync(backupsDir, { recursive: true });
+		mkdirSync(backupsDir, { recursive: true });
 	}
 
 	writeFileSync(backupPath, JSON.stringify(clubs, null, 2));

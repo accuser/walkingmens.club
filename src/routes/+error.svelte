@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let { data } = $props();
 
 	// Get error details from the page store
-	let {
-		error,
-		status,
-		url: { hostname }
-	} = $derived($page);
+	let { error, status } = $derived($page);
 
 	// Determine if this is a subdomain-related error
 	let isSubdomainError = $derived(
@@ -78,7 +76,7 @@
 			{/if}
 			<div class="error-actions">
 				<button onclick={() => history.back()} class="back-button"> Go Back </button>
-				<a href="/" class="home-link"> Home </a>
+				<a href={resolve('/')} class="home-link"> Home </a>
 			</div>
 		{/if}
 	</div>

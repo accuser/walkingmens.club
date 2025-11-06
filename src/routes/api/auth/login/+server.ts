@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, platform, cookies, getClie
 		}
 
 		// Set session cookie
-		setAuthCookie({ cookies, url: new URL(request.url) } as any, result.session.id);
+		setAuthCookie({ cookies, url: new URL(request.url) }, result.session.id);
 
 		return json({
 			success: true,

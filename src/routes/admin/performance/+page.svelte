@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
 
 	let performanceData = $state(null);
 	let indexRecommendations = $state([]);
@@ -268,7 +267,7 @@
 			<div class="alerts-section">
 				<h2>Performance Alerts</h2>
 				<div class="alerts-grid">
-					{#each performanceData.alerts as alert}
+					{#each performanceData.alerts as alert, index (index)}
 						<div class="alert-card {getAlertClass(alert.type)}">
 							<div class="alert-header">
 								<span class="alert-type">{alert.type.toUpperCase()}</span>
@@ -382,7 +381,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							{#each performanceData.slowQueries as query}
+							{#each performanceData.slowQueries as query, index (index)}
 								<tr>
 									<td>{query.query}</td>
 									<td>{formatDuration(query.duration)}</td>
@@ -401,7 +400,7 @@
 			<div class="recommendations-section">
 				<h2>Optimization Recommendations</h2>
 				<div class="recommendations-list">
-					{#each performanceData.recommendations as rec}
+					{#each performanceData.recommendations as rec, index (index)}
 						<div class="recommendation-card {getPriorityClass(rec.priority)}">
 							<div class="rec-header">
 								<span class="rec-category">{rec.category}</span>
@@ -449,7 +448,7 @@
 							<h4>Optimization</h4>
 							<p>Estimated Speedup: {queryAnalysis.optimization.estimatedSpeedup}x</p>
 							<div class="improvements">
-								{#each queryAnalysis.optimization.improvements as improvement}
+								{#each queryAnalysis.optimization.improvements as improvement, index (index)}
 									<div class="improvement">{improvement}</div>
 								{/each}
 							</div>
@@ -480,7 +479,7 @@
 				</button>
 			</div>
 			<div class="index-recommendations">
-				{#each indexRecommendations as rec, i}
+				{#each indexRecommendations as rec, i (i)}
 					<div class="index-rec-card">
 						<label class="index-checkbox">
 							<input type="checkbox" bind:group={selectedRecommendations} value={i} />

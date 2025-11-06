@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+
 	import SystemMonitoring from '$lib/components/admin/SystemMonitoring.svelte';
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let { data } = $props();
 
 	let systemHealth = $state(null);
@@ -228,7 +229,7 @@
 
 				<!-- Subdomain Details -->
 				<div class="subdomain-list">
-					{#each subdomainHealth.subdomains as subdomain}
+					{#each subdomainHealth.subdomains as subdomain (subdomain.hostname)}
 						<div class="subdomain-card">
 							<div class="subdomain-header">
 								<div class="subdomain-info">
@@ -251,7 +252,7 @@
 								<div class="issues">
 									<h5>Issues:</h5>
 									<ul>
-										{#each subdomain.issues as issue}
+										{#each subdomain.issues as issue, index (index)}
 											<li>{issue}</li>
 										{/each}
 									</ul>
@@ -311,7 +312,7 @@
 							<div class="backup-issues">
 								<h4>Issues:</h4>
 								<ul>
-									{#each backupStatus.backup.issues as issue}
+									{#each backupStatus.backup.issues as issue, index (index)}
 										<li>{issue}</li>
 									{/each}
 								</ul>
@@ -346,7 +347,7 @@
 					<div class="recommendations">
 						<h4>Recommendations</h4>
 						<ul>
-							{#each backupStatus.recommendations as recommendation}
+							{#each backupStatus.recommendations as recommendation, index (index)}
 								<li>{recommendation}</li>
 							{/each}
 						</ul>

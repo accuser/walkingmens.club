@@ -2,7 +2,7 @@
  * Tests for club cache service
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MemoryClubCacheService, type CacheConfig } from './clubCache';
 import type { ClubConfig } from '../clubs/types';
 

@@ -4,7 +4,7 @@
 
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async (event) => {
+export const load: PageServerLoad = async () => {
 	// Basic dashboard data - can be expanded later
 	return {
 		stats: {

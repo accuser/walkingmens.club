@@ -4,7 +4,6 @@
  */
 
 import type { D1Database } from '../database/types';
-import type { ClubConfig } from '../clubs/types';
 
 export interface BackupMetadata {
 	id: string;
@@ -20,11 +19,11 @@ export interface BackupMetadata {
 
 export interface BackupData {
 	metadata: BackupMetadata;
-	clubs: any[];
-	meetingPoints: any[];
-	meetingSchedules: any[];
-	walkingRoutes: any[];
-	routePoints: any[];
+	clubs: unknown[];
+	meetingPoints: unknown[];
+	meetingSchedules: unknown[];
+	walkingRoutes: unknown[];
+	routePoints: unknown[];
 }
 
 export interface RestoreOptions {
@@ -285,12 +284,11 @@ export class BackupService {
 	 */
 	async performHealthCheck(): Promise<HealthCheckResult> {
 		const checks: HealthCheckResult['checks'] = [];
-		const startTime = Date.now();
 
 		// Check database connectivity
 		await this.runHealthCheck(checks, 'Database Connectivity', async () => {
 			const result = await this.db.prepare('SELECT 1 as test').first();
-			if (!result || (result as any).test !== 1) {
+			if (!result || (result as { test: number }).test !== 1) {
 				throw new Error('Database connectivity test failed');
 			}
 		});
@@ -333,8 +331,10 @@ export class BackupService {
 				)
 				.first();
 
-			if (orphanedMeetingPoints && (orphanedMeetingPoints as any).count > 0) {
-				throw new Error(`Found ${(orphanedMeetingPoints as any).count} orphaned meeting points`);
+			if (orphanedMeetingPoints && (orphanedMeetingPoints as { count: number }).count > 0) {
+				throw new Error(
+					`Found ${(orphanedMeetingPoints as { count: number }).count} orphaned meeting points`
+				);
 			}
 		});
 
@@ -506,7 +506,7 @@ export class BackupService {
 	/**
 	 * Get table data from backup
 	 */
-	private getTableData(table: string, backupData: BackupData): any[] {
+	private getTableData(table: string, backupData: BackupData): unknown[] {
 		switch (table) {
 			case 'clubs':
 				return backupData.clubs;
@@ -548,9 +548,9 @@ export class BackupService {
 
 		// Check data consistency
 		if (backupData.clubs && backupData.meetingPoints) {
-			const clubIds = new Set(backupData.clubs.map((c: any) => c.id));
+			const clubIds = new Set(backupData.clubs.map((c) => (c as { id: string }).id));
 			const orphanedMeetingPoints = backupData.meetingPoints.filter(
-				(mp: any) => !clubIds.has(mp.club_id)
+				(mp) => !clubIds.has((mp as { club_id: string }).club_id)
 			);
 			if (orphanedMeetingPoints.length > 0) {
 				errors.push(`Found ${orphanedMeetingPoints.length} orphaned meeting points`);
@@ -680,6 +680,7 @@ export class BackupService {
 	/**
 	 * Store backup data (in production, this would use external storage)
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async storeBackupData(backupId: string, data: BackupData): Promise<void> {
 		// In production, store to Cloudflare R2, S3, or other storage
 		// For now, we'll just log that it would be stored
@@ -689,6 +690,7 @@ export class BackupService {
 	/**
 	 * Load backup data (in production, this would load from external storage)
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async loadBackupData(backupId: string): Promise<BackupData> {
 		// In production, load from external storage
 		// For now, return mock data
@@ -706,6 +708,7 @@ export class BackupService {
 	/**
 	 * Convert backup data to SQL format
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private convertToSQL(data: BackupData): string {
 		// Implementation would generate SQL INSERT statements
 		return '-- SQL backup format not implemented';
@@ -714,6 +717,7 @@ export class BackupService {
 	/**
 	 * Convert SQL format to backup data
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async convertFromSQL(sql: string): Promise<BackupData> {
 		// Implementation would parse SQL and extract data
 		throw new Error('SQL import not implemented');

@@ -113,7 +113,10 @@ export const GET: RequestHandler = async (event) => {
 /**
  * Generate recommendations based on backup and recovery status
  */
-function generateRecommendations(backupStatus: BackupStatus, recoveryStatus: any): string[] {
+function generateRecommendations(
+	backupStatus: BackupStatus,
+	recoveryStatus: { healthy: boolean; lastTest?: Date }
+): string[] {
 	const recommendations: string[] = [];
 
 	if (backupStatus.status === 'error') {

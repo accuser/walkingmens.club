@@ -3,6 +3,7 @@ Admin dashboard page
 -->
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -49,7 +50,7 @@ Admin dashboard page
 		<div class="quick-actions">
 			<h2 class="section-title">Quick Actions</h2>
 			<div class="action-grid">
-				<a href="/admin/clubs/new" class="action-card">
+				<a href={resolve('/admin/clubs/new')} class="action-card">
 					<div class="action-icon">➕</div>
 					<div class="action-content">
 						<div class="action-title">Add New Club</div>
@@ -57,7 +58,7 @@ Admin dashboard page
 					</div>
 				</a>
 
-				<a href="/admin/clubs" class="action-card">
+				<a href={resolve('/admin/clubs')} class="action-card">
 					<div class="action-icon">📋</div>
 					<div class="action-content">
 						<div class="action-title">Manage Clubs</div>
@@ -65,7 +66,7 @@ Admin dashboard page
 					</div>
 				</a>
 
-				<a href="/admin/settings" class="action-card">
+				<a href={resolve('/admin/settings')} class="action-card">
 					<div class="action-icon">⚙️</div>
 					<div class="action-content">
 						<div class="action-title">Settings</div>

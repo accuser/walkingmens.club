@@ -5,9 +5,10 @@ Admin clubs list and management page
 	import type { PageData } from './$types';
 	import type { ClubConfig } from '$lib/clubs/types';
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+
 	import ConfirmDialog from '$lib/components/admin/ConfirmDialog.svelte';
 	import Toast from '$lib/components/admin/Toast.svelte';
+	import { resolve } from '$app/paths';
 	import LoadingOverlay from '$lib/components/admin/LoadingOverlay.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -146,12 +147,6 @@ Admin clubs list and management page
 		showToast = true;
 	}
 
-	function showInfoToast(message: string) {
-		toastMessage = message;
-		toastType = 'info';
-		showToast = true;
-	}
-
 	function closeToast() {
 		showToast = false;
 	}
@@ -188,7 +183,7 @@ Admin clubs list and management page
 				<p class="page-subtitle">Manage walking club configurations</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs/new" class="btn btn-primary">
+				<a href={resolve('/admin/clubs/new')} class="btn btn-primary">
 					<span class="btn-icon">➕</span>
 					Add New Club
 				</a>
@@ -305,7 +300,7 @@ Admin clubs list and management page
 								<td class="club-actions">
 									<div class="action-buttons">
 										<a
-											href="/admin/clubs/{club.id}/edit"
+											href={resolve(`/admin/clubs/${club.id}/edit`)}
 											class="btn btn-sm btn-secondary"
 											title="Edit club"
 										>
@@ -348,7 +343,8 @@ Admin clubs list and management page
 					</button>
 
 					<div class="pagination-pages">
-						{#each Array(totalPages) as _, i}
+						<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
+						{#each Array(totalPages) as _, i (i)}
 							{@const page = i + 1}
 							<button
 								class="pagination-page"
@@ -382,7 +378,7 @@ Admin clubs list and management page
 					{:else}
 						<h3>No clubs yet</h3>
 						<p>Get started by creating your first walking club configuration.</p>
-						<a href="/admin/clubs/new" class="btn btn-primary"> Add Your First Club </a>
+						<a href={resolve('/admin/clubs/new')} class="btn btn-primary"> Add Your First Club </a>
 					{/if}
 				</div>
 			</div>

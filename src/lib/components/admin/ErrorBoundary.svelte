@@ -3,18 +3,15 @@ Error boundary component for graceful error handling
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	interface Props {
 		fallback?: string;
 		showDetails?: boolean;
-		children?: import('svelte').Snippet;
 	}
 
-	let {
-		fallback = 'Something went wrong. Please try again.',
-		showDetails = false,
-		children
-	}: Props = $props();
+	let { fallback = 'Something went wrong. Please try again.', showDetails = false }: Props =
+		$props();
 
 	let error = $state<Error | null>(null);
 	let errorDetails = $state('');
@@ -65,12 +62,12 @@ Error boundary component for graceful error handling
 
 			<div class="error-actions">
 				<button class="btn btn-primary" onclick={retry}> Try Again </button>
-				<a href="/admin" class="btn btn-outline"> Go to Dashboard </a>
+				<a href={resolve('/admin')} class="btn btn-outline"> Go to Dashboard </a>
 			</div>
 		</div>
 	</div>
 {:else}
-	{@render children?.()}
+	<slot />
 {/if}
 
 <style>

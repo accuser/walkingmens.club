@@ -8,7 +8,7 @@ Admin club edit form with route visualization
 	import { onMount } from 'svelte';
 	import Toast from '$lib/components/admin/Toast.svelte';
 	import LoadingOverlay from '$lib/components/admin/LoadingOverlay.svelte';
-	import ConfirmDialog from '$lib/components/admin/ConfirmDialog.svelte';
+	import { resolve } from '$app/paths';
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -23,8 +23,6 @@ Admin club edit form with route visualization
 	let showToast = false;
 	let toastMessage = '';
 	let toastType: 'success' | 'error' | 'warning' | 'info' = 'info';
-	let showUnsavedChangesDialog = false;
-	let hasUnsavedChanges = false;
 
 	const club: ClubConfig = data.club;
 
@@ -209,11 +207,6 @@ Admin club edit form with route visualization
 	let hostnameCheckTimeout: number;
 
 	// Toast helpers
-	function showSuccessToast(message: string) {
-		toastMessage = message;
-		toastType = 'success';
-		showToast = true;
-	}
 
 	function showErrorToast(message: string) {
 		toastMessage = message;
@@ -268,7 +261,7 @@ Admin club edit form with route visualization
 				<p class="page-subtitle">Editing: {club.name}</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs" class="btn btn-outline"> ← Back to Clubs </a>
+				<a href={resolve('/admin/clubs')} class="btn btn-outline"> ← Back to Clubs </a>
 			</div>
 		</div>
 	</div>
@@ -280,7 +273,7 @@ Admin club edit form with route visualization
 				<div class="error-suggestions">
 					<p>Suggestions:</p>
 					<ul>
-						{#each form.suggestions as suggestion}
+						{#each form.suggestions as suggestion, index (index)}
 							<li>{suggestion}</li>
 						{/each}
 					</ul>
@@ -670,7 +663,7 @@ Admin club edit form with route visualization
 							<div class="route-points-list">
 								<h4>Route Points ({routePoints.length})</h4>
 								<div class="points-table">
-									{#each routePoints as point, index}
+									{#each routePoints as point, index (index)}
 										<div class="point-row">
 											<div class="point-info">
 												<span class="point-number">{index + 1}</span>
@@ -795,7 +788,7 @@ Admin club edit form with route visualization
 				{/if}
 			</button>
 
-			<a href="/admin/clubs" class="btn btn-outline"> Cancel </a>
+			<a href={resolve('/admin/clubs')} class="btn btn-outline"> Cancel </a>
 		</div>
 	</form>
 </div>

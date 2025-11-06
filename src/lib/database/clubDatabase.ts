@@ -15,7 +15,7 @@ import type {
 } from './entities';
 import { mapEntitiesToClubConfig, mapClubConfigToEntities } from './mappers';
 import { validateClubConfig, ValidationError } from './validation';
-import { DATABASE_CONFIG } from '../config/database';
+
 import { performanceMonitor } from '../services/performanceMonitor';
 
 /**

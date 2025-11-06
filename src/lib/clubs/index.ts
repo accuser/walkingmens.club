@@ -23,7 +23,7 @@ export const staticFallbackProvider: FallbackDataProvider = {
 };
 
 // Global service instance
-let clubService: any = null;
+let clubService: unknown = null;
 
 /**
  * Initialize club service with platform context

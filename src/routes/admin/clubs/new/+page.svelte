@@ -7,6 +7,7 @@ Admin new club creation form
 	import { onMount } from 'svelte';
 	import Toast from '$lib/components/admin/Toast.svelte';
 	import LoadingOverlay from '$lib/components/admin/LoadingOverlay.svelte';
+	import { resolve } from '$app/paths';
 
 	export let data: PageData;
 	export let form: ActionData;
@@ -119,12 +120,6 @@ Admin new club creation form
 		showToast = true;
 	}
 
-	function showInfoToast(message: string) {
-		toastMessage = message;
-		toastType = 'info';
-		showToast = true;
-	}
-
 	function closeToast() {
 		showToast = false;
 	}
@@ -159,7 +154,7 @@ Admin new club creation form
 				<p class="page-subtitle">Create a new walking club configuration</p>
 			</div>
 			<div class="header-right">
-				<a href="/admin/clubs" class="btn btn-outline"> ← Back to Clubs </a>
+				<a href={resolve('/admin/clubs')} class="btn btn-outline"> ← Back to Clubs </a>
 			</div>
 		</div>
 	</div>
@@ -171,7 +166,7 @@ Admin new club creation form
 				<div class="error-suggestions">
 					<p>Suggestions:</p>
 					<ul>
-						{#each form.suggestions as suggestion}
+						{#each form.suggestions as suggestion, index (index)}
 							<li>{suggestion}</li>
 						{/each}
 					</ul>
@@ -547,7 +542,7 @@ Admin new club creation form
 				{/if}
 			</button>
 
-			<a href="/admin/clubs" class="btn btn-outline"> Cancel </a>
+			<a href={resolve('/admin/clubs')} class="btn btn-outline"> Cancel </a>
 		</div>
 	</form>
 </div>

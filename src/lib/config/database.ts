@@ -45,7 +45,7 @@ export function getDatabase(platform: App.Platform | undefined) {
 /**
  * Database connection health check
  */
-export async function checkDatabaseHealth(db: any): Promise<boolean> {
+export async function checkDatabaseHealth(db: unknown): Promise<boolean> {
 	try {
 		const result = await db.prepare('SELECT 1 as health_check').first();
 		return result?.health_check === 1;

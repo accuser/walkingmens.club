@@ -9,7 +9,6 @@
 
 	let sortedClubs = $state<ClubWithDistance[]>(clubs.map((c) => ({ ...c })));
 	let geolocationStatus = $state<'loading' | 'success' | 'denied' | 'error' | null>(null);
-	let userLocation = $state<{ lat: number; lng: number } | null>(null);
 
 	// Calculate distance between two points using Haversine formula
 	function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -37,10 +36,6 @@
 
 		navigator.geolocation.getCurrentPosition(
 			(position) => {
-				userLocation = {
-					lat: position.coords.latitude,
-					lng: position.coords.longitude
-				};
 				geolocationStatus = 'success';
 
 				// Calculate distances and sort

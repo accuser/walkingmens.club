@@ -5,11 +5,7 @@
 
 import type { ClubConfig } from '../clubs/types';
 import { D1ClubDatabaseService, type ClubDatabaseService } from './clubDatabase';
-import {
-	DatabaseConnectionManager,
-	DatabaseUnavailableError,
-	DatabaseConnectionError
-} from './connectionManager';
+import { DatabaseConnectionManager, DatabaseUnavailableError } from './connectionManager';
 import { getDatabase } from '../config/database';
 import {
 	CachedClubService,

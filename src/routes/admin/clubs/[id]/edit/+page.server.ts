@@ -137,7 +137,7 @@ export const actions: Actions = {
 				});
 			}
 
-			const result = await response.json();
+			await response.json();
 
 			// Redirect to clubs list on success
 			throw redirect(302, '/admin/clubs');

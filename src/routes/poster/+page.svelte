@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 	const { club, clubUrl } = data;
@@ -50,7 +51,7 @@
 		Print Poster
 	</button>
 	<a
-		href="/"
+		href={resolve('/')}
 		class="mt-2 block rounded-lg bg-slate-600 px-6 py-3 text-center font-semibold text-white shadow-lg transition hover:bg-slate-700"
 	>
 		Back to Club Page

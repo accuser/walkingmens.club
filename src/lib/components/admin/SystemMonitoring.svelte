@@ -18,7 +18,6 @@
 	// Simulated metrics (in production, these would come from real monitoring)
 	function generateMetrics() {
 		const now = Date.now();
-		const baseTime = now - (now % 1000); // Round to nearest second
 
 		return {
 			uptime: Math.floor((now - (now % (24 * 60 * 60 * 1000))) / 1000), // Simulated uptime
@@ -191,7 +190,7 @@
 			<div class="alerts-section">
 				<h4>Recent Alerts</h4>
 				<div class="alerts-list">
-					{#each alerts as alert}
+					{#each alerts as alert (alert.timestamp)}
 						<div class="alert-item {getAlertClass(alert.level)}">
 							<span class="alert-icon">{getAlertIcon(alert.level)}</span>
 							<div class="alert-content">
