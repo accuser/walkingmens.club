@@ -3,14 +3,14 @@ Admin layout component with authentication wrapper and navigation
 -->
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ErrorBoundary from '$lib/components/admin/ErrorBoundary.svelte';
 
-	export let data: LayoutData;
+	let { data }: { data: LayoutData } = $props();
 
-	let showMobileMenu = false;
+	let showMobileMenu = $state(false);
 
 	// Navigation items
 	const navItems = [
@@ -41,9 +41,11 @@ Admin layout component with authentication wrapper and navigation
 	}
 
 	// Close mobile menu when route changes
-	$: if ($page.url.pathname) {
-		showMobileMenu = false;
-	}
+	$effect(() => {
+		if (page.url.pathname) {
+			showMobileMenu = false;
+		}
+	});
 
 	onMount(() => {
 		// Initialize any admin-specific functionality
@@ -63,7 +65,7 @@ Admin layout component with authentication wrapper and navigation
 				<button
 					class="mobile-menu-toggle"
 					class:active={showMobileMenu}
-					on:click={() => (showMobileMenu = !showMobileMenu)}
+					onclick={() => (showMobileMenu = !showMobileMenu)}
 					aria-label="Toggle navigation menu"
 				>
 					<span></span>
@@ -78,7 +80,7 @@ Admin layout component with authentication wrapper and navigation
 			<div class="header-right">
 				<div class="user-info">
 					<span class="user-name">Welcome, {data.user?.username}</span>
-					<button class="logout-btn" on:click={handleLogout} type="button"> Logout </button>
+					<button class="logout-btn" onclick={handleLogout} type="button"> Logout </button>
 				</div>
 			</div>
 		</div>
@@ -92,8 +94,8 @@ Admin layout component with authentication wrapper and navigation
 					<a
 						href={item.href}
 						class="nav-link"
-						class:active={$page.url.pathname === item.href}
-						aria-current={$page.url.pathname === item.href ? 'page' : undefined}
+						class:active={page.url.pathname === item.href}
+						aria-current={page.url.pathname === item.href ? 'page' : undefined}
 					>
 						<span class="nav-icon">{item.icon}</span>
 						<span class="nav-label">{item.label}</span>
@@ -109,7 +111,9 @@ Admin layout component with authentication wrapper and navigation
 			<ErrorBoundary
 				fallback="An error occurred in the admin panel. Please try refreshing the page."
 			>
-				<slot />
+				{#snippet children()}
+					<slot />
+				{/snippet}
 			</ErrorBoundary>
 		</div>
 	</main>

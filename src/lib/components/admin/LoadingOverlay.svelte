@@ -2,9 +2,13 @@
 Loading overlay component
 -->
 <script lang="ts">
-	export let show = false;
-	export let message = 'Loading...';
-	export let backdrop = true;
+	interface Props {
+		show?: boolean;
+		message?: string;
+		backdrop?: boolean;
+	}
+
+	let { show = false, message = 'Loading...', backdrop = true }: Props = $props();
 </script>
 
 {#if show}

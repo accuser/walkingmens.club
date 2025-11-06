@@ -2,27 +2,36 @@
 Reusable confirmation dialog component
 -->
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	interface Props {
+		show?: boolean;
+		title?: string;
+		message?: string;
+		confirmText?: string;
+		cancelText?: string;
+		confirmVariant?: 'primary' | 'danger';
+		loading?: boolean;
+		onconfirm?: () => void;
+		oncancel?: () => void;
+	}
 
-	export let show = false;
-	export let title = 'Confirm Action';
-	export let message = 'Are you sure you want to proceed?';
-	export let confirmText = 'Confirm';
-	export let cancelText = 'Cancel';
-	export let confirmVariant: 'primary' | 'danger' = 'primary';
-	export let loading = false;
-
-	const dispatch = createEventDispatcher<{
-		confirm: void;
-		cancel: void;
-	}>();
+	let {
+		show = $bindable(false),
+		title = 'Confirm Action',
+		message = 'Are you sure you want to proceed?',
+		confirmText = 'Confirm',
+		cancelText = 'Cancel',
+		confirmVariant = 'primary',
+		loading = false,
+		onconfirm,
+		oncancel
+	}: Props = $props();
 
 	function handleConfirm() {
-		dispatch('confirm');
+		onconfirm?.();
 	}
 
 	function handleCancel() {
-		dispatch('cancel');
+		oncancel?.();
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -39,14 +48,15 @@ Reusable confirmation dialog component
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="dialog-overlay"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="dialog-title"
-		on:click={handleBackdropClick}
-		on:keydown={handleKeydown}
+		tabindex="-1"
+		onclick={handleBackdropClick}
+		onkeydown={handleKeydown}
 	>
 		<div class="dialog-content">
 			<div class="dialog-header">
@@ -58,7 +68,7 @@ Reusable confirmation dialog component
 			</div>
 
 			<div class="dialog-actions">
-				<button type="button" class="btn btn-outline" on:click={handleCancel} disabled={loading}>
+				<button type="button" class="btn btn-outline" onclick={handleCancel} disabled={loading}>
 					{cancelText}
 				</button>
 				<button
@@ -66,7 +76,7 @@ Reusable confirmation dialog component
 					class="btn"
 					class:btn-primary={confirmVariant === 'primary'}
 					class:btn-danger={confirmVariant === 'danger'}
-					on:click={handleConfirm}
+					onclick={handleConfirm}
 					disabled={loading}
 				>
 					{#if loading}
