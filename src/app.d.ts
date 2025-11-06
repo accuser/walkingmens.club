@@ -38,7 +38,9 @@ interface D1ExecResult {
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			user?: import('$lib/auth').AdminUser;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		interface Platform {

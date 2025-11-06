@@ -108,6 +108,23 @@ export function isDatabaseServiceAvailable(): boolean {
 }
 
 /**
+ * Check if a hostname is configured in the system
+ */
+export async function isHostnameConfigured(hostname: string): Promise<boolean> {
+	// Try database service first if available
+	if (clubService && typeof clubService.isHostnameConfigured === 'function') {
+		try {
+			return await clubService.isHostnameConfigured(hostname);
+		} catch (error) {
+			console.warn('Database service failed for hostname check, falling back to static data:', error);
+		}
+	}
+
+	// Fallback to static data
+	return staticClubsByHostname.has(hostname);
+}
+
+/**
  * Get service health status (if database service is available)
  */
 export async function getServiceHealthStatus() {

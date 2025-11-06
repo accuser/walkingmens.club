@@ -4,6 +4,7 @@
  */
 
 import type { ClubConfig } from '../clubs/types';
+import { performanceMonitor } from './performanceMonitor';
 
 /**
  * Cache service interface for club configurations
@@ -82,6 +83,8 @@ export class MemoryClubCacheService implements ClubCacheService {
 	 * Get club configuration from cache
 	 */
 	async get(key: string): Promise<ClubConfig | null> {
+		const startTime = Date.now();
+		
 		if (!this.config.enabled) {
 			return null;
 		}
@@ -90,6 +93,13 @@ export class MemoryClubCacheService implements ClubCacheService {
 		
 		if (!entry) {
 			this.stats.misses++;
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordCacheOperation({
+				operation: 'get',
+				key,
+				duration,
+				hit: false
+			});
 			return null;
 		}
 
@@ -98,10 +108,26 @@ export class MemoryClubCacheService implements ClubCacheService {
 		if (now - entry.timestamp > entry.ttl) {
 			this.cache.delete(key);
 			this.stats.misses++;
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordCacheOperation({
+				operation: 'get',
+				key,
+				duration,
+				hit: false
+			});
 			return null;
 		}
 
 		this.stats.hits++;
+		const duration = Date.now() - startTime;
+		performanceMonitor.recordCacheOperation({
+			operation: 'get',
+			key,
+			duration,
+			hit: true,
+			size: JSON.stringify(entry.data).length
+		});
+		
 		return entry.data;
 	}
 
@@ -109,6 +135,8 @@ export class MemoryClubCacheService implements ClubCacheService {
 	 * Set club configuration in cache with TTL
 	 */
 	async set(key: string, club: ClubConfig, ttl?: number): Promise<void> {
+		const startTime = Date.now();
+		
 		if (!this.config.enabled) {
 			return;
 		}
@@ -125,6 +153,15 @@ export class MemoryClubCacheService implements ClubCacheService {
 		};
 
 		this.cache.set(key, entry);
+		
+		const duration = Date.now() - startTime;
+		performanceMonitor.recordCacheOperation({
+			operation: 'set',
+			key,
+			duration,
+			hit: true,
+			size: JSON.stringify(club).length
+		});
 	}
 
 	/**
