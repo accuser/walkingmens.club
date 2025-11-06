@@ -69,21 +69,21 @@
   - Test rollback procedures and error recovery
   - _Requirements: 1.3, 4.1, 4.2_
 
-- [ ] 5. Build admin API endpoints
-- [ ] 5.1 Create admin authentication and authorization system
+- [x] 5. Build admin API endpoints
+- [x] 5.1 Create admin authentication and authorization system
   - Implement secure authentication for admin routes using sessions or JWT
   - Add authorization middleware to protect admin endpoints
   - Create login/logout functionality with proper security measures
   - _Requirements: 2.1_
 
-- [ ] 5.2 Implement admin API routes for club management
+- [x] 5.2 Implement admin API routes for club management
   - Create GET /api/admin/clubs endpoint to list all clubs
   - Implement POST /api/admin/clubs endpoint for creating new clubs
   - Add PUT /api/admin/clubs/[id] endpoint for updating existing clubs
   - Create DELETE /api/admin/clubs/[id] endpoint for removing clubs
   - _Requirements: 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 5.3 Add hostname validation and subdomain management
+- [x] 5.3 Add hostname validation and subdomain management
   - Implement hostname uniqueness validation in API endpoints
   - Create subdomain status checking functionality
   - Add DNS configuration guidance for new subdomains
