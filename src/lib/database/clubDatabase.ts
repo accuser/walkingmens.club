@@ -16,6 +16,7 @@ import type {
 import { mapEntitiesToClubConfig, mapClubConfigToEntities } from './mappers';
 import { validateClubConfig, ValidationError } from './validation';
 import { DATABASE_CONFIG } from '../config/database';
+import { performanceMonitor } from '../services/performanceMonitor';
 
 /**
  * Database service interface for club operations
@@ -27,6 +28,7 @@ export interface ClubDatabaseService {
 	updateClub(id: string, club: Partial<ClubConfig>): Promise<ClubConfig>;
 	deleteClub(id: string): Promise<void>;
 	validateHostname(hostname: string): Promise<boolean>;
+	isHostnameConfigured?(hostname: string): Promise<boolean>;
 	migrateStaticData(): Promise<void>;
 }
 
@@ -40,14 +42,31 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 	 * Get club configuration by hostname
 	 */
 	async getClubByHostname(hostname: string): Promise<ClubConfig | null> {
+		const startTime = Date.now();
 		try {
 			const clubData = await this.getClubWithRelations(
 				'SELECT * FROM clubs WHERE hostname = ?',
 				[hostname]
 			);
 			
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordQuery({
+				queryType: 'getClubByHostname',
+				duration,
+				success: true,
+				rowsAffected: clubData ? 1 : 0
+			});
+			
 			return clubData ? mapEntitiesToClubConfig(clubData) : null;
 		} catch (error) {
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordQuery({
+				queryType: 'getClubByHostname',
+				duration,
+				success: false,
+				error: error instanceof Error ? error.message : String(error)
+			});
+			
 			console.error('Error fetching club by hostname:', error);
 			throw new Error(`Failed to fetch club with hostname: ${hostname}`);
 		}
@@ -57,12 +76,20 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 	 * Get all club configurations
 	 */
 	async getAllClubs(): Promise<ClubConfig[]> {
+		const startTime = Date.now();
 		try {
 			const clubsResult = await this.db
 				.prepare('SELECT * FROM clubs ORDER BY name')
 				.all<ClubEntity>();
 
 			if (!clubsResult.results || clubsResult.results.length === 0) {
+				const duration = Date.now() - startTime;
+				performanceMonitor.recordQuery({
+					queryType: 'getAllClubs',
+					duration,
+					success: true,
+					rowsAffected: 0
+				});
 				return [];
 			}
 
@@ -79,8 +106,24 @@ export class D1ClubDatabaseService implements ClubDatabaseService {
 				}
 			}
 
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordQuery({
+				queryType: 'getAllClubs',
+				duration,
+				success: true,
+				rowsAffected: clubs.length
+			});
+
 			return clubs;
 		} catch (error) {
+			const duration = Date.now() - startTime;
+			performanceMonitor.recordQuery({
+				queryType: 'getAllClubs',
+				duration,
+				success: false,
+				error: error instanceof Error ? error.message : String(error)
+			});
+			
 			console.error('Error fetching all clubs:', error);
 			throw new Error('Failed to fetch all clubs');
 		}

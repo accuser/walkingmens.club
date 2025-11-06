@@ -104,15 +104,35 @@ export class ResilientClubService implements ClubDatabaseService {
 					`getClubByHostname(${hostname})`
 				);
 
+				// Log successful database access for monitoring
+				if (result) {
+					console.log(`Club found via database: ${hostname} -> ${result.name}`);
+				}
+
 				return result;
 			} catch (error) {
 				console.error('Database operation failed, using fallback:', error);
-				return this.fallbackProvider?.getClubByHostname(hostname) || null;
+				const fallbackResult = this.fallbackProvider?.getClubByHostname(hostname) || null;
+				
+				if (fallbackResult) {
+					console.warn(`Club found via fallback: ${hostname} -> ${fallbackResult.name}`);
+				} else {
+					console.warn(`Club not found in database or fallback: ${hostname}`);
+				}
+				
+				return fallbackResult;
 			}
 		}
 
 		// Fallback only
-		return this.fallbackProvider?.getClubByHostname(hostname) || null;
+		const fallbackResult = this.fallbackProvider?.getClubByHostname(hostname) || null;
+		if (fallbackResult) {
+			console.log(`Club found via fallback only: ${hostname} -> ${fallbackResult.name}`);
+		} else {
+			console.log(`Club not found in fallback: ${hostname}`);
+		}
+		
+		return fallbackResult;
 	}
 
 	/**
@@ -212,7 +232,7 @@ export class ResilientClubService implements ClubDatabaseService {
 	}
 
 	/**
-	 * Validate hostname
+	 * Validate hostname (check if it's available for use)
 	 */
 	async validateHostname(hostname: string): Promise<boolean> {
 		await this.initialize();
@@ -233,6 +253,27 @@ export class ResilientClubService implements ClubDatabaseService {
 			// Fallback to checking against fallback data
 			return !this.fallbackProvider?.getClubByHostname(hostname);
 		}
+	}
+
+	/**
+	 * Check if a hostname is configured (exists in system)
+	 */
+	async isHostnameConfigured(hostname: string): Promise<boolean> {
+		await this.initialize();
+
+		// Try database first
+		if (this.cachedService) {
+			try {
+				const club = await this.cachedService.getClubByHostname(hostname);
+				return club !== null;
+			} catch (error) {
+				console.warn('Database check failed for hostname configuration:', error);
+			}
+		}
+
+		// Fallback check
+		const fallbackClub = this.fallbackProvider?.getClubByHostname(hostname);
+		return fallbackClub !== undefined;
 	}
 
 	/**

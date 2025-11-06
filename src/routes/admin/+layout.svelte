@@ -16,6 +16,7 @@ Admin layout component with authentication wrapper and navigation
 	const navItems = [
 		{ href: '/admin', label: 'Dashboard', icon: '🏠' },
 		{ href: '/admin/clubs', label: 'Clubs', icon: '🚶' },
+		{ href: '/admin/system', label: 'System Status', icon: '📊' },
 		{ href: '/admin/settings', label: 'Settings', icon: '⚙️' }
 	];
 
