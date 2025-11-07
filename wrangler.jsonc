@@ -21,11 +21,6 @@
 		{
 			"binding": "DB",
 			"database_name": "walking-mens-club-db",
-			"database_id": "placeholder-database-id"
-		},
-		{
-			"binding": "walking_mens_club_db",
-			"database_name": "walking-mens-club-db",
 			"database_id": "d660ffec-1adc-40ce-8d0b-125860b2ce41"
 		}
 	],
